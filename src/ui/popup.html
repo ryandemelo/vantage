@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Vantage</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body { width: 320px; padding: 14px; background: var(--surface); }
+    .hdr { margin-bottom: 12px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--good); }
+    .dot.off { background: var(--faint); }
+    .dot.paused { background: var(--warn); }
+    .nums { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+    .nums .tile { padding: 10px 12px; }
+    .nums .v { font-size: 22px; }
+    .actions { display: flex; gap: 8px; }
+    .actions button { flex: 1; }
+    .foot { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+  </style>
+</head>
+<body>
+  <div class="row between hdr">
+    <div class="row" style="gap:7px">
+      <span class="dot" id="dot"></span>
+      <strong>Vantage</strong>
+    </div>
+    <span class="faint" id="site">—</span>
+  </div>
+
+  <div class="nums">
+    <div class="tile"><div class="k">Today</div><div class="v" id="today">0</div></div>
+    <div class="tile"><div class="k">This week</div><div class="v" id="week">0</div></div>
+  </div>
+
+  <div class="card" style="padding:11px 13px; margin-bottom:12px">
+    <div class="k faint" style="text-transform:uppercase;letter-spacing:.05em;font-weight:600">Top work this week</div>
+    <div id="topType" style="font-weight:580;margin-top:3px">No activity yet</div>
+    <div class="faint" id="redacted" style="margin-top:5px"></div>
+  </div>
+
+  <div class="actions">
+    <button class="primary" id="openReports">Reports</button>
+    <button id="pause">Pause</button>
+  </div>
+
+  <div class="row" style="margin-top:8px">
+    <button class="sm grow" id="probe">Check this page</button>
+  </div>
+  <pre id="probeOut" style="display:none;white-space:pre-wrap;font-size:11px;line-height:1.45;
+       background:var(--surface-2);border:1px solid var(--border);border-radius:8px;
+       padding:9px;margin:8px 0 0;max-height:230px;overflow:auto"></pre>
+
+  <div class="foot">
+    <span class="faint">Stored locally only</span>
+    <a href="#" id="openOptions" class="faint">Settings</a>
+  </div>
+
+  <script src="../core/schema.js"></script>
+  <script src="../core/redact.js"></script>
+  <script src="../core/classify.js"></script>
+  <script src="../core/adapters.js"></script>
+<script src="../core/surfaces.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
