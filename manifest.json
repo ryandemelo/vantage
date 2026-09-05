@@ -1,0 +1,85 @@
+{
+  "manifest_version": 3,
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnj6sC3Ew4DylMi0c5O+9fhscomZt9dLHLIzvkp6BX6W9wJahTqL+HNz73dnCovhdpj6b5hh5tTvlS5TM6I4g/P3uotcQnpDZzCv1OUJEqB6wpB+yXosY/YYadjTSQm75rKeI66JCsZcrhQzs/c37iqViujqLy1c9XfVUNUHMx5lDY7ND7exph4VZ9AYannEPCTpwMSOBDf21SvgdVlz9dqPcuaTUOtxEcLCzSqi3UDIIzKuyDMWht8n5wjEL1XAXsjEnL0QTbrwOB3qOTL0bD3wlJUauTlvwLQOafy5vnZE1xz3F76S032EDRzZMrjQe0S9ZQtQbiDSEEXMn207W3QIDAQAB",
+  "name": "Vantage \u2014 AI Usage Insights",
+  "short_name": "Vantage",
+  "version": "0.1.0",
+  "description": "Local-only visibility into how you use Claude, ChatGPT and Gemini. Redacts sensitive data before anything is stored. Weekly and monthly reports.",
+  "minimum_chrome_version": "114",
+  "permissions": [
+    "storage",
+    "unlimitedStorage",
+    "alarms"
+  ],
+  "optional_permissions": [
+    "scripting",
+    "identity.email"
+  ],
+  "host_permissions": [
+    "https://claude.ai/*",
+    "https://*.claude.ai/*",
+    "https://chatgpt.com/*",
+    "https://*.chatgpt.com/*",
+    "https://chat.openai.com/*",
+    "https://gemini.google.com/*",
+    "https://copilot.microsoft.com/*",
+    "https://copilot.cloud.microsoft/*",
+    "https://m365.cloud.microsoft/*",
+    "https://www.office.com/*"
+  ],
+  "optional_host_permissions": [
+    "https://*/*"
+  ],
+  "background": {
+    "service_worker": "src/background/service-worker.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://claude.ai/*",
+        "https://*.claude.ai/*",
+        "https://chatgpt.com/*",
+        "https://*.chatgpt.com/*",
+        "https://chat.openai.com/*",
+        "https://gemini.google.com/*",
+        "https://copilot.microsoft.com/*",
+        "https://copilot.cloud.microsoft/*",
+        "https://m365.cloud.microsoft/*",
+        "https://www.office.com/*"
+      ],
+      "js": [
+        "src/core/schema.js",
+        "src/core/redact.js",
+        "src/core/classify.js",
+        "src/core/adapters.js",
+        "src/core/surfaces.js",
+        "src/content/capture.js"
+      ],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ],
+  "action": {
+    "default_popup": "src/ui/popup.html",
+    "default_title": "Vantage \u2014 AI Usage Insights",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "options_page": "src/ui/options.html",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "storage": {
+    "managed_schema": "policy/managed_schema.json"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' https:"
+  }
+}
