@@ -462,7 +462,7 @@
     },
     "orgDomainMap": {
       "title": "Email domain to business unit name",
-      "description": "One map pushed to every business unit. Each device resolves its own business unit from the signed-in profile domain, so a single uniform push still produces per-business unit reporting.",
+      "description": "One map pushed to every business unit. Each device resolves its own business unit from the signed-in profile domain, so a single uniform push still produces per business unit reporting.",
       "type": "object",
       "additionalProperties": {
         "type": "string"

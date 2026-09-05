@@ -16,7 +16,7 @@ First public release.
 
 - Prompt capture for Claude, ChatGPT, Gemini and Microsoft Copilot, with a declarative adapter per site.
 - Detection of the platform surface a prompt was sent to, covering Projects, custom GPTs, Gems and agents, plus concurrent Canvas, Deep Research, code interpreter and search flags.
-- On device redaction covering keys, tokens, secrets, email addresses, national ID and FIN with checksum validation, payment cards with Luhn validation, phone numbers, IP addresses and IBANs, plus organisation wordlists and custom patterns.
+- On device redaction covering keys, tokens, secrets, email addresses, checksum validated national identity numbers, payment cards with Luhn validation, phone numbers, IP addresses and IBANs, plus organisation wordlists and custom patterns.
 - On device work type classifier over eighteen categories, with anti patterns, length damping, second intent and thread context inheritance.
 - Two DOM read scopes, with `minimal` as the default. Under `minimal` the composer is the only text read.
 - Weekly, monthly and custom period reports with an executive summary, sustained use, depth, output use, self reported value, governance, classification quality and automation candidates.

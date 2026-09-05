@@ -55,11 +55,11 @@
       label: 'Policy & governance',
       colour: '#8B5CF6',
       terms: [
-        ['policy', 4], ['regulation', 5], ['regulation', 4], ['standard', 4],
-        ['act ', 2], ['clause', 3], ['compliance', 3], ['framework', 3],
+        ['policy', 4], ['regulation', 4], ['standard operating', 5],
+        ['clause', 3], ['compliance', 3], ['framework', 3], ['control', 2],
         ['guideline', 3], ['impact assessment', 5], ['options paper', 5],
         ['consultation', 3], ['white paper', 4], ['governance', 3],
-        ['stakeholder', 2], ['mandate', 2], ['directive', 3], ['circular no', 4]
+        ['stakeholder', 2], ['mandate', 2], ['directive', 3], ['position paper', 4]
       ],
       patterns: [],
       anti: [[/```/, -5], [/\b(iam|bucket|s3|kubernetes|network|retry|cors|password)\s+polic/i, -8]]
@@ -142,9 +142,9 @@
       colour: '#F97316',
       terms: [
         ['enquiry', 5], ['inquiry', 4], ['complaint', 5], ['feedback from', 4],
-        ['member of the public', 6], ['support', 4], ['resident', 3],
-        ['faq', 4], ['service standard', 4], ['case note', 4], ['appeal', 3],
-        ['applicant', 3], ['helpdesk', 4], ['ticket', 2], ['escalation', 3]
+        ['customer', 4], ['client', 3], ['account manager', 4],
+        ['faq', 4], ['service level', 4], ['case note', 4], ['refund', 4],
+        ['support ticket', 5], ['helpdesk', 4], ['ticket', 2], ['escalation', 3]
       ],
       patterns: []
     },
@@ -257,7 +257,7 @@
       ],
       patterns: [],
       // Anything with code or business unit vocabulary is work, whatever else it says.
-      anti: [[/```/, -8], [/\b(business unit|department|department|division|the public|stakeholder)\b/i, -4]]
+      anti: [[/```/, -8], [/\b(team|department|division|customer|client|stakeholder)\b/i, -4]]
     },
     {
       id: 'other',

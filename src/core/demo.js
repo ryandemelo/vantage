@@ -58,7 +58,7 @@
       'Draft an options paper structure for this policy question'
     ],
     research: ['Find background on how other jurisdictions handle this and cite sources'],
-    support: ['Draft a reply to this enquiry from a member of the public about their appeal'],
+    support: ['Draft a reply to this customer enquiry about their refund request'],
     procurement: ['Draft evaluation criteria for this tender covering security and support'],
     translation: ['Translate this public notice into simplified Chinese and Malay'],
     learning: ['Explain in simple terms how retrieval-augmented generation works'],

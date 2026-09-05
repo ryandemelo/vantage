@@ -205,7 +205,7 @@
       ]));
     }
 
-    /* executive summary, the version that goes in front of a executive */
+    /* executive summary, the version that goes in front of an executive */
     root.appendChild(el('div', { class: 'card stack' }, [
       el('div', { class: 'row between' }, [
         el('h2', { text: 'Executive summary' }),

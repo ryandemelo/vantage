@@ -27,7 +27,8 @@
     return sum % 10 === 0;
   }
 
-  // national identity number checksum. Cheap and removes most false positives.
+  // Checksum for the national identity number format below. Cheap, and it
+  // removes most false positives from an otherwise very loose pattern.
   function nationalIdValid(id) {
     const s = id.toUpperCase();
     if (!/^[STFGM]\d{7}[A-Z]$/.test(s)) return false;
@@ -176,10 +177,10 @@
       default: true
     },
     {
-      id: 'postal_sg',
+      id: 'postal_code',
       label: 'Postal code',
-      re: /\b(?:[Ss]ingapore|[Ss]\(?\)?)\s*\(?\b(\d{6})\b\)?/g,
-      replace: ' [POSTCODE]',
+      re: /\b(?:[Pp]ostal(?:\s+code)?|[Pp]ostcode)\s*:?\s*\(?\b(\d{5,6})\b\)?/g,
+      replace: '[POSTCODE]',
       default: false
     },
     {

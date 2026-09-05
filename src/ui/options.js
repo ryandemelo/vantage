@@ -478,7 +478,7 @@
 
     $('grantIdentity').addEventListener('click', async () => {
       const ok = await chrome.permissions.request({ permissions: ['identity.email'] }).catch(() => false);
-      if (!ok) { alert('Permission not granted, so the business unit cannot be derived automatically.'); return; }
+      if (!ok) { alert('Permission not granted, so the organisation cannot be derived automatically.'); return; }
       await loadOrg();
     });
 

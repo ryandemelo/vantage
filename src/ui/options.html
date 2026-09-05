@@ -124,7 +124,7 @@
       <h3 style="margin-top:16px">Add a custom site</h3>
       <div class="cols">
         <label class="field"><span class="lab">Name</span><input type="text" id="cName" placeholder="Internal Assistant"></label>
-        <label class="field"><span class="lab">Hostname</span><input type="text" id="cHost" placeholder="ai.businessUnit.acme.example"></label>
+        <label class="field"><span class="lab">Hostname</span><input type="text" id="cHost" placeholder="ai.acme.example"></label>
       </div>
       <label class="field">
         <span class="lab">Composer selector <span class="faint">(optional)</span></span>
@@ -159,11 +159,11 @@
 
     <section class="card sec">
       <h2>Work categories</h2>
-      <p class="faint" style="margin-top:2px">Prompts are scored against these categories on device. Add terms to tune them for your business unit's vocabulary.</p>
+      <p class="faint" style="margin-top:2px">Prompts are scored against these categories on device. Add terms to tune them for your organisation's vocabulary.</p>
       <div id="taxonomy" class="checks"></div>
       <label class="field" style="margin-top:14px">
         <span class="lab">Extra keywords</span>
-        <textarea id="extraTerms" placeholder='{"policy": [["board paper", 6], ["board brief", 6]]}'></textarea>
+        <textarea id="extraTerms" placeholder='{"policy": [["board paper", 6], ["executiveial brief", 6]]}'></textarea>
         <span class="hint">JSON object keyed by category id, values are [term, weight] pairs.</span>
       </label>
     </section>

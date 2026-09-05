@@ -63,7 +63,7 @@ console.log('\nclassification');
     ['Translate this notice into simplified Chinese and Malay', 'translation'],
     ['Draft evaluation criteria for the tender and review the vendor SOW', 'procurement'],
     ['Explain how the transformer architecture works in simple terms', 'learning'],
-    ['Reply to this enquiry from a member of the public about their appeal', 'support'],
+    ['Reply to this customer enquiry about their refund request', 'support'],
     ['Draft a job description and interview questions for the new analyst role', 'hr'],
     ['Give me a legal opinion on our indemnity and liability exposure here', 'legal'],
     ['Suggest a recipe for dinner and a workout for tomorrow', 'personal'],
@@ -87,7 +87,7 @@ console.log('\nclassifier logic');
   const contract = VG.classify('Debug my smart contract, the function reverts\n```solidity\n```', s);
   check('smart contract is coding, not procurement', contract.id === 'coding', contract.id);
 
-  const holiday = VG.classify('Draft the business unit circular on public holiday arrangements for the division', s);
+  const holiday = VG.classify('Draft the organisation circular on public holiday arrangements for the division', s);
   check('business unit vocabulary beats personal', holiday.id !== 'personal', holiday.id);
 
   // Two jobs in one prompt keeps the second intent.
@@ -139,7 +139,7 @@ console.log('\naccount tier');
   check('corporate domain -> enterprise',
     VG.detectAccount(adapter, doc({ '#email': 'j.rivera@acme.example' }), standard) === 'enterprise', '');
   check('subdomain of corporate domain -> enterprise',
-    VG.detectAccount(adapter, doc({ '#email': 'j@ict.businessUnit.acme.example' }), standard) === 'enterprise', '');
+    VG.detectAccount(adapter, doc({ '#email': 'j@eng.acme.example' }), standard) === 'enterprise', '');
   check('outside domain -> personal',
     VG.detectAccount(adapter, doc({ '#email': 'someone@gmail.com' }), standard) === 'personal', '');
   check('nothing readable -> unknown',
@@ -219,13 +219,13 @@ console.log('\nsurfaces');
 console.log('\nconfig sources');
 {
   const s = Object.assign({}, VG.DEFAULT_SETTINGS, {
-    policyAdapters: [{ id: 'internal', label: 'Internal Assistant', hosts: ['ai.businessUnit.acme.example'], revision: 4 }],
+    policyAdapters: [{ id: 'internal', label: 'Internal Assistant', hosts: ['ai.acme.example'], revision: 4 }],
     customAdapters: [
-      { id: 'internal', label: 'User copy that must lose', hosts: ['ai.businessUnit.acme.example'] },
+      { id: 'internal', label: 'User copy that must lose', hosts: ['ai.acme.example'] },
       { id: 'mine', label: 'My tool', hosts: ['tool.example'] }
     ]
   });
-  const a = VG.resolveAdapter('ai.businessUnit.acme.example', s);
+  const a = VG.resolveAdapter('ai.acme.example', s);
   check('policy wins over user for same id', a && a.label === 'Internal Assistant', a && a.label);
   check('policy entry marked', a && a.source === 'policy', a && a.source);
   const b = VG.resolveAdapter('tool.example', s);
@@ -383,7 +383,7 @@ console.log('\nlow volume behaviour');
 console.log('\nscheduled upload');
 {
   const base = Object.assign({}, VG.DEFAULT_SETTINGS, {
-    uploadEnabled: true, uploadUrl: 'https://collector.businessUnit.acme.example/v1/vantage',
+    uploadEnabled: true, uploadUrl: 'https://collector.acme.example/v1/vantage',
     uploadCadence: 'weekly', weekStartsOn: 1
   });
   // A Wednesday, so "this week" is genuinely incomplete.
@@ -429,7 +429,7 @@ async function uploadPayloadChecks() {
   const mkBody = async (over) => {
     const st = Object.assign({}, VG.DEFAULT_SETTINGS, { reportSigningKey: 'k' }, over || {});
     const rep = VG.buildReport(events, [], period, st, events, null);
-    return VG.buildUploadPayload({ report: rep, events, settings: st, org: { userKey: 'dev1', businessUnit: 'MOM' }, period });
+    return VG.buildUploadPayload({ report: rep, events, settings: st, org: { userKey: 'dev1', businessUnit: 'Engineering' }, period });
   };
 
   const agg = await mkBody({ uploadContent: 'aggregate' });
@@ -437,7 +437,7 @@ async function uploadPayloadChecks() {
   check('aggregate carries no prompt text anywhere',
     JSON.stringify(agg).indexOf('redacted [EMAIL]') === -1, '');
   check('payload is signed', /^VG-/.test(agg.signature.ref), agg.signature.ref);
-  check('payload carries the device and business unit', agg.device.key === 'dev1' && agg.device.businessUnit === 'MOM', '');
+  check('payload carries the device and business unit', agg.device.key === 'dev1' && agg.device.businessUnit === 'Engineering', '');
 
   const sum = await mkBody({ uploadContent: 'summary' });
   check('summary carries narrative, not the report object', !!sum.summary && sum.report === undefined, '');
@@ -461,10 +461,10 @@ async function uploadPayloadChecks() {
     evMeta.events.every((e) => e.promptText === ''), '');
 
   const desc = VG.uploadDescription(Object.assign({}, VG.DEFAULT_SETTINGS, {
-    uploadEnabled: true, uploadUrl: 'https://collector.businessUnit.acme.example/v1', uploadCadence: 'weekly'
+    uploadEnabled: true, uploadUrl: 'https://collector.acme.example/v1', uploadCadence: 'weekly'
   }));
   check('transparency panel names the host and cadence',
-    desc.host === 'collector.businessUnit.acme.example' && desc.when === 'once a week', JSON.stringify(desc));
+    desc.host === 'collector.acme.example' && desc.when === 'once a week', JSON.stringify(desc));
   check('upload described as off when not configured',
     VG.uploadDescription(VG.DEFAULT_SETTINGS) === null, '');
 
@@ -559,12 +559,12 @@ console.log('\nreport tamper-evidence');
   // A site whose label the verifier cannot map back to an id must still
   // verify — the verifier only ever has the document.
   const customSettings = Object.assign({}, s, {
-    policyAdapters: [{ id: 'internal', label: 'Internal Assistant', hosts: ['ai.businessUnit.acme.example'] }]
+    policyAdapters: [{ id: 'internal', label: 'Internal Assistant', hosts: ['ai.acme.example'] }]
   });
   const customEvents = events.concat([
     Object.assign(VG.newEvent(), {
       ts: now - day, day: VG.localDay(now - day), site: 'policy:internal',
-      host: 'ai.businessUnit.acme.example', conversationHash: 'c9', turn: 1,
+      host: 'ai.acme.example', conversationHash: 'c9', turn: 1,
       workType: 'policy', workTypeLabel: VG.taxonomyById('policy').label
     })
   ]);

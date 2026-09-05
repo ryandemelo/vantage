@@ -113,14 +113,14 @@ Eighteen categories. Four splits are deliberate.
 Tune the taxonomy for your vocabulary under Settings, Work categories, Extra keywords:
 
 ```json
-{ "policy": [["board paper", 6], ["board brief", 6]],
-  "procurement": [["ariba", 6], ["ITQ", 5]] }
+{ "policy": [["board paper", 6], ["executiveial brief", 6]],
+  "procurement": [["ariba", 6], ["RFI", 5]] }
 ```
 
 ### How the classifier decides
 
 1. Weighted terms and patterns per category, with log damping so a word repeated ten times is not ten times the signal.
-2. Anti patterns subtract. "IAM policy" and "bucket policy" are engineering rather than policy work. "Smart contract" is not procurement. Anything containing a code fence is not personal. These collisions are the main source of false positives in a enterprise vocabulary and they are handled explicitly.
+2. Anti patterns subtract. "IAM policy" and "bucket policy" are engineering rather than policy work. "Smart contract" is not procurement. Anything containing a code fence is not personal. These collisions are the main source of false positives in an enterprise vocabulary and they are handled explicitly.
 3. Length damping. Scores are divided by the square root of words over 80, above 80 words, so a long paste cannot drift into whichever category has the most terms.
 4. Second intent. Many prompts do two jobs, such as summarise this then translate it. When the runner up scores within 60 percent of the winner it is kept as `workTypeSecondary`.
 5. Thread context inheritance. Short follow up turns like "make it shorter" or "now in Malay" carry no signal of their own. Rather than falling into Uncategorised they inherit the topic the conversation has established, at 70 percent of its confidence, marked `workTypeSource: inherited`. Turn 1 never inherits and a confident turn never inherits.
@@ -171,7 +171,7 @@ Every report prints this under the numbers.
 
 ## Redaction
 
-Built in detectors cover private keys, JWTs, AWS, Google, Slack, GitHub and provider API keys, assigned secrets such as password assignments, URLs carrying credentials, email addresses, national identity numbers with checksum validation, payment cards with Luhn validation, phone numbers, IP addresses and IBANs. Opt in detectors cover Postal codes, long numeric identifiers and UUIDs.
+Built in detectors cover private keys, JWTs, AWS, Google, Slack, GitHub and provider API keys, assigned secrets such as password assignments, URLs carrying credentials, email addresses, checksum validated national identity numbers, payment cards with Luhn validation, phone numbers, IP addresses and IBANs. Opt in detectors cover postal codes, long numeric identifiers and UUIDs.
 
 Two organisation level additions:
 
@@ -261,7 +261,7 @@ In code, append to `VG.BUILTIN_ADAPTERS` in `src/core/adapters.js`:
   id: 'mytool',
   label: 'Internal Assistant',
   colour: '#0F766E',
-  hosts: ['ai.businessUnit.acme.example'],
+  hosts: ['ai.acme.example'],
   selectors: {
     composer: ['div[contenteditable="true"].composer'],
     send:     ['button[data-testid="send"]'],
@@ -325,7 +325,7 @@ No form for anyone to fill in. Two mechanisms, either or both.
 | Mechanism | How it works | Use when |
 | --- | --- | --- |
 | Pushed value | `orgUnit`, `orgDivision` and `orgCohort` in policy | Your push can target groups |
-| Domain lookup | One `orgDomainMap` pushed identically to everyone. Each device resolves its own business unit from the domain of the signed in browser profile | Your push goes uniformly to all business units |
+| Domain lookup | One `orgDomainMap` pushed identically to everyone. Each device resolves its own business unit from the domain of the signed in browser profile | Your push goes uniformly to every business unit |
 
 ```json
 "orgDomainMap": {

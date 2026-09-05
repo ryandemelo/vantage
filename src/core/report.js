@@ -825,7 +825,7 @@
   };
 
   /* ------------------------------------------------------------------ *
-   * The version that goes in front of a executive: three claims, each with
+   * The version that goes in front of an executive: three claims, each with
    * its method attached, and an explicit statement of what is not known.
    * ------------------------------------------------------------------ */
   VG.executiveSummary = function (r) {

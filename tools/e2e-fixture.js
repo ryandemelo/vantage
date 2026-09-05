@@ -46,7 +46,7 @@ const PROMPTS = [
     want: { workType: 'coding', source: 'inherited' } // inherits the thread topic
   },
   {
-    text: 'Draft an email to j.rivera@acme.example about CASE-104477, her national ID is S1234567D',
+    text: 'Draft an email to j.rivera@acme.example about CASE-104477, national ID S1234567D',
     want: { workType: 'drafting', redactions: ['email', 'national_id'] }
   },
   {
