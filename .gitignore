@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Signing key. Fixes the extension ID. Never commit.
+keys/
+
+# Local test browser profile. Contains real session cookies.
+.playwright-profile/
+
+# Probe output, machine specific
+tools/probe-report.txt
+
+# Editor and OS
+.DS_Store
+.vscode/
+.idea/
+
+# Local assistant and tooling context
+.claude/
+CLAUDE.md
