@@ -153,6 +153,65 @@ const body = `/*
     );
   });
 
+  /*
+   * When a selector misses, report what is actually on the page so the fix can
+   * be made from one report instead of another round trip. Attributes only,
+   * never text content, except aria-label which is interface chrome.
+   */
+  function describe(el) {
+    var bits = [el.tagName.toLowerCase()];
+    if (el.id) bits.push('#' + el.id);
+    var testid = el.getAttribute('data-testid') || el.getAttribute('data-test-id');
+    if (testid) bits.push('[data-testid="' + testid + '"]');
+    var al = el.getAttribute('aria-label');
+    if (al) bits.push('[aria-label="' + al.slice(0, 40) + '"]');
+    var t = el.getAttribute('type');
+    if (t) bits.push('[type="' + t + '"]');
+    var cls = (el.getAttribute('class') || '').split(/\\s+/).filter(function (c) {
+      return c && c.length < 24 && !/^(css|sc)-/.test(c);
+    }).slice(0, 3);
+    if (cls.length) bits.push('.' + cls.join('.'));
+    return bits.join('');
+  }
+
+  function candidates(label, scope, sel, limit) {
+    if (!scope) return;
+    var found = [];
+    try { found = [].slice.call(scope.querySelectorAll(sel)); } catch (e) { return; }
+    if (!found.length) return;
+    lines.push('');
+    lines.push('CANDIDATES for ' + label + ' (' + found.length + ' found, showing ' + Math.min(limit, found.length) + ')');
+    found.slice(0, limit).forEach(function (el) { lines.push('  ' + describe(el)); });
+  }
+
+  var composerEl = probe(adapter.selectors.composer).hit
+    ? document.querySelector(probe(adapter.selectors.composer).hit) : null;
+  var threadEl = probe(adapter.selectors.thread).hit
+    ? document.querySelector(probe(adapter.selectors.thread).hit) : null;
+  var lastAssistant = (function () {
+    var h = probe(adapter.selectors.assistantTurn).hit;
+    if (!h) return null;
+    var all = document.querySelectorAll(h);
+    return all.length ? all[all.length - 1] : null;
+  })();
+
+  if (broken.indexOf('send') !== -1 || degraded.indexOf('send') !== -1) {
+    var form = composerEl && composerEl.closest
+      ? (composerEl.closest('form, footer, div[class*="composer" i]') || document.body)
+      : document.body;
+    candidates('send, buttons near the composer', form, 'button', 8);
+  }
+  if (broken.indexOf('model') !== -1 || degraded.some(function (d) { return d.indexOf('model') === 0; })) {
+    candidates('model, buttons outside the thread', document, 'header button, nav button, [class*="header" i] button', 8);
+  }
+  if (degraded.indexOf('regenerate') !== -1 || broken.indexOf('regenerate') !== -1) {
+    candidates('regenerate, buttons in the last reply', lastAssistant && lastAssistant.parentElement, 'button', 10);
+  }
+  if (!probe(adapter.account.emailFrom).hit && !probe(adapter.account.planFrom).hit) {
+    candidates('account, buttons that look like an account control', document,
+      '[data-testid*="account" i], [aria-label*="account" i], [class*="account" i], nav [class*="profile" i]', 5);
+  }
+
   lines.push('');
   lines.push('OTHER');
   var sh = probe(adapter.sharedDom);
