@@ -18,14 +18,14 @@
   'use strict';
   const VG = (root.VG = root.VG || {});
 
-  VG.CONFIG_REVISION = 6;
+  VG.CONFIG_REVISION = 7;
 
   VG.BUILTIN_ADAPTERS = [
     {
       id: 'claude',
       label: 'Claude',
       colour: '#D97757',
-      revision: 5,
+      revision: 7,
       hosts: ['claude.ai'],
       selectors: {
         composer: [
@@ -41,13 +41,24 @@
         ],
         thread: ['main', 'div.flex-1.flex.flex-col'],
         userTurn: ['[data-testid="user-message"]', 'div.font-user-message'],
+        // Live probe on a signed in conversation: the first two missed and the
+        // third resolved, so the working one leads and the others stay behind
+        // it for anyone on an older build.
         assistantTurn: [
-          '[data-testid="assistant-message"]',
+          'div.font-claude-response',
           'div.font-claude-message',
-          'div.font-claude-response'
+          '[data-testid="assistant-message"]'
         ],
         model: ['[data-testid="model-selector-dropdown"]', 'button[data-testid*="model" i]'],
-        regenerate: ['button[aria-label*="Retry" i]', 'button[aria-label*="Regenerate" i]'],
+        // Rendered on hover over a reply, so a static probe reports this
+        // missing even when correct. The only button present in a reply at
+        // rest carries no label or test id, so there is nothing better to
+        // match on than the hover state labels.
+        regenerate: [
+          'button[aria-label*="Retry" i]',
+          'button[aria-label*="Regenerate" i]',
+          'button[aria-label*="Try again" i]'
+        ],
         attachment: ['[data-testid="file-thumbnail"]', 'div[data-testid*="attachment" i]']
       },
       surfaces: [
