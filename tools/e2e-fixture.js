@@ -340,10 +340,13 @@ const PROMPTS = [
     const realGet = VG.settings.get;
     VG.settings.get = async () => Object.assign(await realGet.call(VG.settings), {
       uploadEnabled: true,
-      uploadUrl: 'https://collector.test.internal/v1/vantage',
-      uploadAuthHeader: 'Bearer test-token',
+      // Direct to object storage, no receiver: PUT to a per period object.
+      uploadUrl: 'https://store.test.internal/vantage/{unit}/{period}-{device}.json?sig=presigned',
+      uploadMethod: 'PUT',
+      uploadHeaders: { 'x-ms-blob-type': 'BlockBlob' },
       uploadCadence: 'daily',
       uploadContent: 'aggregate',
+      orgUnit: 'Platform',
       reportSigningKey: 'e2e-key'
     });
     const realContains = chrome.permissions.contains;
@@ -352,7 +355,7 @@ const PROMPTS = [
     let seen = null;
     const realFetch = self.fetch;
     self.fetch = async (url, opts) => {
-      seen = { url, headers: opts.headers, body: opts.body };
+      seen = { url, method: opts.method, headers: opts.headers, body: opts.body };
       return { ok: true, status: 200 };
     };
 
@@ -367,9 +370,18 @@ const PROMPTS = [
   check('upload ran with no AI tab open', !!captured.seen, JSON.stringify(captured.result));
   if (captured.seen) {
     const body = JSON.parse(captured.seen.body);
-    check('posted to the configured endpoint',
-      captured.seen.url === 'https://collector.test.internal/v1/vantage', captured.seen.url);
-    check('auth header sent', captured.seen.headers.Authorization === 'Bearer test-token', '');
+    check('wrote with PUT, which is what object storage expects',
+      captured.seen.method === 'PUT', String(captured.seen.method));
+    check('device resolved to the per install id, not a shared constant',
+      captured.seen.url.indexOf('unknown-device') === -1, captured.seen.url);
+    check('placeholders resolved to a per period object',
+      /\/vantage\/platform\/d-\d{4}-\d{2}-\d{2}-[a-z0-9-]+\.json/.test(captured.seen.url), captured.seen.url);
+    check('presigned query string preserved',
+      captured.seen.url.indexOf('?sig=presigned') !== -1, captured.seen.url);
+    check('object store header sent',
+      captured.seen.headers['x-ms-blob-type'] === 'BlockBlob', JSON.stringify(captured.seen.headers));
+    check('no Authorization added to a presigned url',
+      captured.seen.headers.Authorization === undefined, JSON.stringify(captured.seen.headers));
     check('payload is signed', /^VG-/.test(body.signature.ref), body.signature.ref);
     check('payload names the period', /^d-\d{4}-\d{2}-\d{2}$/.test(body.period.id), body.period.id);
     check('aggregate payload carries the report', !!body.report, '');

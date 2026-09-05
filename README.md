@@ -212,8 +212,10 @@ It does not depend on an AI site being open, or on any tab being open. The trigg
 | Policy key | Purpose |
 | --- | --- |
 | `uploadEnabled` | Master switch, off unless set here |
-| `uploadUrl` | HTTPS endpoint such as a collector, blob store or API gateway |
-| `uploadAuthHeader` | Sent verbatim as the Authorization header |
+| `uploadUrl` | HTTPS target. May contain `{device}`, `{unit}`, `{period}` and `{date}` |
+| `uploadMethod` | `PUT` for object storage, which is the default, or `POST` for a receiver |
+| `uploadHeaders` | Extra request headers, for example `x-ms-blob-type` for Azure Blob |
+| `uploadAuthHeader` | Sent verbatim as the Authorization header. Leave empty for a presigned URL |
 | `uploadCadence` | `daily`, `weekly` or `monthly` |
 | `uploadContent` | `summary`, `aggregate` which is the default, or `events` |
 | `uploadIncludePromptText` | Additional gate on top of `events` |
@@ -223,6 +225,36 @@ Every one of these is policy only. `VG.settings.set` refuses them, so neither th
 Scheduling is catch up rather than fire and forget. The uploader works out which completed periods have not been sent and sends the oldest first, one per wake, up to eight periods back. A browser closed for three weeks sends the three missed weeks on its next run. The period in progress is never sent. Failures back off exponentially to a 24 hour ceiling and a sent period is recorded so it is never sent twice.
 
 The payload is signed with the same key as an exported report so a receiver can distinguish a genuine push from a fabricated one.
+
+### Writing straight to object storage, with no server
+
+The default is a `PUT` to a presigned or SAS URL, so nothing has to be built or operated to receive the data.
+
+The URL may carry placeholders, substituted per upload so each report lands at its own object instead of overwriting the last.
+
+| Placeholder | Value |
+| --- | --- |
+| `{device}` | The pseudonymous device key, or a random per install id when no identity is derived |
+| `{unit}` | Business unit, lowercased and slugged |
+| `{period}` | Period id, for example `w-2026-09-01` |
+| `{date}` | Date the upload was sent |
+
+```json
+{
+  "uploadEnabled": true,
+  "uploadUrl": "https://acct.blob.core.windows.net/vantage/{unit}/{period}-{device}.json?sv=...&sig=...",
+  "uploadMethod": "PUT",
+  "uploadHeaders": { "x-ms-blob-type": "BlockBlob" },
+  "uploadCadence": "weekly",
+  "uploadContent": "aggregate"
+}
+```
+
+Leave `uploadAuthHeader` empty when the URL is presigned. Sending both a signature and an Authorization header causes some object stores to reject the request.
+
+Set `uploadMethod` to `POST` and use `uploadAuthHeader` if you would rather point at a receiver you already run.
+
+The trade off with a presigned URL is that every device holds a credential that can write to that container, so use a short expiry and rotate it. Nothing else is needed.
 
 Two things are needed beyond policy. The CSP allows `connect-src https:`, but the real gate is a host permission for your endpoint origin. Either add it to `host_permissions` in an internally packaged build, which is the clean route for a central push, or grant it through the `ExtensionSettings` policy using `runtime_allowed_hosts`. Without it nothing is sent and the options page says so.
 

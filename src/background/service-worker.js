@@ -89,7 +89,7 @@ async function runUpload(trigger) {
   const pending = VG.pendingPeriods(settings, state);
   if (!pending.length) return { skipped: 'nothing due' };
 
-  if (!(await endpointPermitted(settings.uploadUrl))) {
+  if (!(await endpointPermitted(VG.uploadTarget(settings, pending[0], await handlers.GET_ORG())))) {
     await setUploadState({
       lastAttemptAt: Date.now(),
       lastStatus: 'no host permission for the configured endpoint'
@@ -109,16 +109,13 @@ async function runUpload(trigger) {
   const report = VG.buildReport(events, prev, period, settings, longEvents, org);
   const body = await VG.buildUploadPayload({ report, events, settings, org, period });
 
-  const headers = { 'Content-Type': 'application/json' };
-  if (settings.uploadAuthHeader) headers.Authorization = settings.uploadAuthHeader;
+  const target = VG.uploadTarget(settings, period, org);
+  const headers = VG.uploadHeaders(settings);
+  const method = (settings.uploadMethod || 'PUT').toUpperCase() === 'POST' ? 'POST' : 'PUT';
 
   try {
-    const res = await fetch(settings.uploadUrl, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(body)
-    });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const res = await fetch(target, { method, headers, body: JSON.stringify(body) });
+    if (!res.ok) throw new Error('HTTP ' + res.status + ' ' + (res.statusText || ''));
 
     const next = await uploadState();
     await setUploadState({
@@ -159,11 +156,19 @@ chrome.runtime.onInstalled.addListener(async (details) => {
   // tamper-evident from the first export rather than from whenever someone
   // remembers to configure it.
   const cur = await VG.settings.get();
+  const seed = {};
   if (!cur.reportSigningKey) {
     const bytes = crypto.getRandomValues(new Uint8Array(32));
-    const hex = Array.from(bytes).map((b) => b.toString(16).padStart(2, '0')).join('');
-    await VG.settings.set({ reportSigningKey: hex });
+    seed.reportSigningKey = Array.from(bytes).map((b) => b.toString(16).padStart(2, '0')).join('');
   }
+  // Without this, devices writing straight to object storage with no identity
+  // derivation would all resolve {device} to the same value and overwrite one
+  // another's reports.
+  if (!cur.installId) {
+    const bytes = crypto.getRandomValues(new Uint8Array(8));
+    seed.installId = Array.from(bytes).map((b) => b.toString(16).padStart(2, '0')).join('');
+  }
+  if (Object.keys(seed).length) await VG.settings.set(seed);
 
   chrome.alarms.create('vantage-retention', { periodInMinutes: 360, when: Date.now() + 60000 });
   // Hourly rather than daily: a browser that is only open briefly still gets

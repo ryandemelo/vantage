@@ -509,6 +509,40 @@ async function uploadPayloadChecks() {
   check('metadata capture level overrides the upload text flag',
     evMeta.events.every((e) => e.promptText === ''), '');
 
+  // Writing straight to object storage means every period needs its own
+  // object, otherwise each upload overwrites the last.
+  const tmpl = Object.assign({}, VG.DEFAULT_SETTINGS, {
+    uploadUrl: 'https://acct.blob.core.example/vantage/{unit}/{period}-{device}.json?sv=2024&sig=abc',
+    orgUnit: 'Field Engineering'
+  });
+  const target = VG.uploadTarget(tmpl, { id: 'w-2026-09-01' }, { userKey: 'a1b2c3', businessUnit: 'Field Engineering' });
+  check('placeholders substituted',
+    target.indexOf('/field-engineering/w-2026-09-01-a1b2c3.json') !== -1, target);
+  check('presigned query string preserved', target.indexOf('?sv=2024&sig=abc') !== -1, target);
+  check('two periods write to different objects',
+    VG.uploadTarget(tmpl, { id: 'w-2026-09-08' }, { userKey: 'a1b2c3' }) !== target, '');
+  check('an unset business unit falls back to the policy value',
+    VG.uploadTarget(tmpl, { id: 'w-1' }, {}).indexOf('/field-engineering/') !== -1,
+    VG.uploadTarget(tmpl, { id: 'w-1' }, {}));
+  const noUnit = Object.assign({}, tmpl, { orgUnit: '' });
+  check('with nothing set at all the path segment is still valid',
+    VG.uploadTarget(noUnit, { id: 'w-1' }, {}).indexOf('/unassigned/') !== -1,
+    VG.uploadTarget(noUnit, { id: 'w-1' }, {}));
+  check('values are slugged so they cannot break the path',
+    VG.uploadTarget(tmpl, { id: 'w-1' }, { businessUnit: 'R&D / Platform' }).indexOf('/r-d-platform/') !== -1,
+    VG.uploadTarget(tmpl, { id: 'w-1' }, { businessUnit: 'R&D / Platform' }));
+
+  const blobHeaders = VG.uploadHeaders(Object.assign({}, VG.DEFAULT_SETTINGS, {
+    uploadHeaders: { 'x-ms-blob-type': 'BlockBlob' }
+  }));
+  check('extra headers are sent', blobHeaders['x-ms-blob-type'] === 'BlockBlob', JSON.stringify(blobHeaders));
+  check('no Authorization when the url is presigned',
+    blobHeaders.Authorization === undefined, JSON.stringify(blobHeaders));
+  check('Authorization sent when configured',
+    VG.uploadHeaders(Object.assign({}, VG.DEFAULT_SETTINGS, { uploadAuthHeader: 'Bearer x' })).Authorization === 'Bearer x', '');
+  check('default method suits object storage', VG.DEFAULT_SETTINGS.uploadMethod === 'PUT',
+    VG.DEFAULT_SETTINGS.uploadMethod);
+
   const desc = VG.uploadDescription(Object.assign({}, VG.DEFAULT_SETTINGS, {
     uploadEnabled: true, uploadUrl: 'https://collector.acme.example/v1', uploadCadence: 'weekly'
   }));
