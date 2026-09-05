@@ -1,0 +1,61 @@
+{
+  "ExtensionInstallForcelist": [
+    "nnnkddpplabnomlnaolmicnanjphpibp;https://REPLACE.internal/vantage/updates.xml"
+  ],
+  "3rdparty": {
+    "extensions": {
+      "nnnkddpplabnomlnaolmicnanjphpibp": {
+        "captureLevel": "redacted",
+        "domScope": "minimal",
+        "allowFullText": false,
+        "retentionDays": 90,
+        "showCaptureToast": true,
+        "weekStartsOn": 1,
+        "sensitiveWordlist": [
+          "Project Kingfisher",
+          "OPS-2026-INTERNAL"
+        ],
+        "customRedactors": [
+          {
+            "id": "case_ref",
+            "label": "Case reference",
+            "pattern": "\\bCASE-\\d{6}\\b",
+            "replacement": "[CASE_REF]"
+          }
+        ],
+        "extraTaxonomyTerms": {
+          "policy": [
+            {
+              "term": "board paper",
+              "weight": 6
+            }
+          ],
+          "procurement": [
+            {
+              "term": "ariba",
+              "weight": 6
+            }
+          ]
+        },
+        "orgDomainMap": {
+          "eng.acme.example": "Engineering",
+          "sales.acme.example": "Sales"
+        },
+        "deriveIdentity": true,
+        "valueSurveyEnabled": false,
+        "valueSurveySamplePercent": 8,
+        "valueSurveyCooldownMin": 240,
+        "uploadEnabled": false,
+        "uploadUrl": "https://acct.blob.core.windows.net/vantage/{unit}/{period}-{device}.json?sv=REPLACE&sig=REPLACE",
+        "uploadMethod": "PUT",
+        "uploadHeaders": {
+          "x-ms-blob-type": "BlockBlob"
+        },
+        "uploadCadence": "weekly",
+        "uploadContent": "aggregate",
+        "uploadIncludePromptText": false,
+        "siteConfigVersion": "2026-09-05-a"
+      }
+    }
+  }
+}
