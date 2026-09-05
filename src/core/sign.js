@@ -1,5 +1,5 @@
 /*
- * Vantage — sign.js
+ * Vantage, sign.js
  * Tamper-evidence for exported reports.
  *
  * This is NOT encryption and does not claim to be. The report stays fully
@@ -7,13 +7,13 @@
  * the report's own numbers, so that changing a figure and handing the document
  * on is detectable:
  *
- *   1. Reference code  — a short "Report ref: VG-XXXX-XXXX-XXXX" in the footer.
+ *   1. Reference code , a short "Report ref: VG-XXXX-XXXX-XXXX" in the footer.
  *                        Looks like an ordinary document reference.
- *   2. Zero-width mark — the digest encoded in invisible characters inside the
+ *   2. Zero-width mark, the digest encoded in invisible characters inside the
  *                        narrative. Survives copy-paste between most editors,
  *                        does not survive being retyped or run through a
  *                        plain-text cleaner.
- *   3. Phrasing bits   — eight either/or wordings in the narrative, chosen by
+ *   3. Phrasing bits  , eight either/or wordings in the narrative, chosen by
  *                        the digest. Survives format conversion and retyping,
  *                        and is the mark an editor is least likely to notice.
  *
@@ -21,7 +21,7 @@
  * phrasing bits CANNOT: an unsigned report carries the default wordings, and
  * the expected bits are effectively random, so phrasing on its own cannot tell
  * "never signed" from "signed then altered". It is therefore treated as
- * corroborating evidence only, never as a verdict — a check that cries wolf on
+ * corroborating evidence only, never as a verdict, a check that cries wolf on
  * unsigned documents would be worse than no check.
  *
  * Someone who has the key and understands the scheme can of course regenerate
@@ -42,7 +42,7 @@
   const ZW_RE = /[​‌‍]/g;
 
   /* ------------------------------------------------------------------ *
-   * Canonical figures — the numbers the marks are computed over. Order is
+   * Canonical figures, the numbers the marks are computed over. Order is
    * fixed, and every one of them is printed somewhere in the markdown, so a
    * verifier can rebuild this list from the document alone.
    * ------------------------------------------------------------------ */
@@ -66,7 +66,7 @@
     // verifier only has the document, and a policy-pushed site's label cannot
     // be mapped back to its id from the markdown alone.
     // Counts only. Shares are withheld from the document at low volume, and
-    // are derivable from the counts anyway — signing over something the
+    // are derivable from the counts anyway, signing over something the
     // document does not always print would make verification fragile.
     const clean = (t) => String(t).replace(/=/g, '');
     r.workTypes.forEach((w) => push('wt:' + clean(w.label), w.count));
@@ -129,7 +129,7 @@
   };
 
   /* ------------------------------------------------------------------ *
-   * Phrasing channel — eight either/or wordings picked by the digest.
+   * Phrasing channel, eight either/or wordings picked by the digest.
    * `a` is the wording summarise() produces; `b` is the alternative.
    * ------------------------------------------------------------------ */
   VG.PHRASE_VARIANTS = [
@@ -237,7 +237,7 @@
     f.push('personalAcct=' + pick(gov, 'Sent from a personal account'));
 
     // Work profile and tools are keyed by id in the canonical list, but the
-    // report prints labels — map back through the taxonomy and adapters.
+    // report prints labels, map back through the taxonomy and adapters.
     const clean = (t) => String(t).replace(/=/g, '');
     work.forEach((r) => f.push('wt:' + clean(r[0]) + '=' + num(r[1])));
     tools.forEach((r) => f.push('site:' + clean(r[0]) + '=' + num(r[1])));
@@ -284,7 +284,7 @@
 
     checks.explanation = {
       altered: 'A mark disagrees with the numbers in this document. A figure has been changed, or the report was signed with a different key.',
-      'intact-partial': 'The marks that survived agree with the numbers. One was lost — usually the document was retyped or passed through a plain-text cleaner.',
+      'intact-partial': 'The marks that survived agree with the numbers. One was lost, usually the document was retyped or passed through a plain-text cleaner.',
       intact: 'Every mark agrees with the numbers in this document.',
       unverified: 'Neither the reference code nor the watermark is present, so this cannot be settled either way. ' +
         'The report was never signed, or both marks were stripped. Ask for the original export.'
@@ -292,7 +292,7 @@
 
     if (checks.verdict === 'unverified' && checks.phrasingDetail.checked) {
       checks.explanation += ' For what it is worth, ' + checks.phrasingDetail.matched + ' of ' +
-        checks.phrasingDetail.checked + ' wordings match what these numbers would have produced — ' +
+        checks.phrasingDetail.checked + ' wordings match what these numbers would have produced, ' +
         'suggestive, but wordings alone cannot separate an unsigned report from an altered one.';
     }
 

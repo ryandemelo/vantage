@@ -1,5 +1,5 @@
 /*
- * Vantage — report.js
+ * Vantage, report.js
  * Turns raw events into a period report plus a written summary.
  * Pure functions over an array of events; no storage or DOM access, so it can
  * be unit-tested and reused by the popup, the reports page and any exporter.
@@ -212,7 +212,7 @@
   }
 
   /* ------------------------------------------------------------------ *
-   * Small samples. At low volume a share is not a finding — "40% coding" off
+   * Small samples. At low volume a share is not a finding. "40% coding" off
    * five prompts is noise with a percent sign on it. Everything downstream
    * checks this before quoting a share.
    * ------------------------------------------------------------------ */
@@ -230,7 +230,7 @@
       band,
       quoteShares: band === 'reportable',
       note: {
-        'too-few': 'Fewer than 10 prompts. Report counts, never percentages — a share computed on this many is noise.',
+        'too-few': 'Fewer than 10 prompts. Report counts, never percentages, a share computed on this many is noise.',
         indicative: 'Between 10 and 30 prompts. Shares are directional only; give the count alongside every percentage.',
         reportable: 'Enough volume for shares to mean something.'
       }[band],
@@ -266,7 +266,7 @@
       reworkRate: pct(reworked, sorted.length),
       medianWords: median(sorted.map((e) => e.promptWords || 0)),
       verdict: copied === 0
-        ? 'nothing from the first attempts was used — the most likely reason someone does not come back'
+        ? 'nothing from the first attempts was used, the most likely reason someone does not come back'
         : pct(copied, sorted.length) < 20
           ? 'little of the early output was used'
           : 'early attempts produced output that got used'
@@ -314,7 +314,7 @@
       estHoursHigh: Math.round((eligible * (mean + ci)) / 60 * 10) / 10,
       distribution: [0, 15, 60, 120].map((m) => ({
         minutes: m,
-        label: m === 0 ? 'None' : m === 15 ? '<15 min' : m === 60 ? '15–60 min' : '>1 hr',
+        label: m === 0 ? 'None' : m === 15 ? '<15 min' : m === 60 ? '15 to 60 min' : '>1 hr',
         count: answered.filter((e) => e.savedMinutes === m).length
       })),
       quality,
@@ -452,7 +452,7 @@
       handoffs[k] = (handoffs[k] || 0) + 1;
     }
 
-    // Repeated prompt openings — only possible when redacted text is retained.
+    // Repeated prompt openings, only possible when redacted text is retained.
     const skeletons = {};
     events.forEach((e) => {
       if (!e.promptText) return;
@@ -555,7 +555,7 @@
         to: period.to,
         rangeLabel: period.from === 0
           ? 'All time'
-          : `${VG.fmtDate(period.from)} – ${VG.fmtDate(period.to - 1)}`
+          : `${VG.fmtDate(period.from)} to ${VG.fmtDate(period.to - 1)}`
       },
       totals: {
         prompts: a.prompts,
@@ -734,7 +734,7 @@
     if (r.risk.promptsWithSensitive) {
       s.push(
         `${r.risk.promptsWithSensitive} prompt${r.risk.promptsWithSensitive === 1 ? '' : 's'} ` +
-        `(${r.risk.pctWithSensitive}%) contained data that was masked before storage — ` +
+        `(${r.risk.pctWithSensitive}%) contained data that was masked before storage, ` +
         `most often ${listOf(r.risk.byType, (t) => `${t.label.toLowerCase()} (${t.count})`, 3)}. ` +
         `The original values were never written to disk.`
       );
@@ -752,8 +752,8 @@
     if (r.untapped.length >= 5) {
       s.push(
         `${r.untapped.length} of the ${VG.TAXONOMY.length - 1} work categories saw no use at all, including ` +
-        `${listOf(r.untapped.slice(0, 4), (c) => c.label.toLowerCase(), 4)} — ` +
-        `at this volume the gap is the finding, not the mix.`
+        `${listOf(r.untapped.slice(0, 4), (c) => c.label.toLowerCase(), 4)}. ` +
+        `At this volume the gap is the finding rather than the mix.`
       );
     }
 
@@ -761,7 +761,7 @@
       s.push(
         `First attempts: across the earliest ${r.firstExperience.prompts} prompts, ` +
         `${r.firstExperience.copyRate}% produced output that was taken away and ` +
-        `${r.firstExperience.reworkRate}% needed a retry — ${r.firstExperience.verdict}.`
+        `${r.firstExperience.reworkRate}% needed a retry. ${r.firstExperience.verdict[0].toUpperCase()}${r.firstExperience.verdict.slice(1)}.`
       );
     }
 
@@ -785,7 +785,7 @@
         (pf.orphanCount ? `; ${pf.orphanCount} were built and never reused.` : '.')
       );
     } else {
-      s.push('All usage was in blank chat — no Projects, custom GPTs, Gems or agents were used, so nothing is being reused or shared.');
+      s.push('All usage was in blank chat. No Projects, custom GPTs, Gems or agents were used, so nothing is being reused or shared.');
     }
 
     const v = r.value;
@@ -793,8 +793,8 @@
       s.push(
         `Self-reported value: ${v.responses} response${v.responses === 1 ? '' : 's'} to the point-of-use prompt ` +
         `(${v.responseRate}% of the ${v.eligibleMoments} moments where output was actually used), ` +
-        `mean ${v.meanMinutes} minutes saved, giving an estimate of ${v.estHoursLow}–${v.estHoursHigh} hours for the period. ` +
-        `Confidence: ${v.confidence}${v.confidence === 'reportable' ? '.' : ' — treat as directional until the sample grows.'}`
+        `mean ${v.meanMinutes} minutes saved, giving an estimate of ${v.estHoursLow} to ${v.estHoursHigh} hours for the period. ` +
+        `Confidence: ${v.confidence}${v.confidence === 'reportable' ? '.' : '. Treat as directional until the sample grows.'}`
       );
     } else {
       s.push('No self-reported value data. Every figure above is a behavioural proxy, not a measurement of time saved.');
@@ -859,8 +859,8 @@
     L.push({
       k: 'Is it being used, or was it a novelty?',
       v: ad.sustained
-        ? `Yes — active in ${ad.activeWeeksOf6} of the last 6 weeks, ${ad.stickiness28}% of working days in the last 28. Trajectory ${ad.trajectory}.`
-        : `Not yet — active in only ${ad.activeWeeksOf6} of the last 6 weeks. Below the 4-of-6 threshold for sustained use.`,
+        ? `Yes, active in ${ad.activeWeeksOf6} of the last 6 weeks, ${ad.stickiness28}% of working days in the last 28. Trajectory ${ad.trajectory}.`
+        : `Not yet, active in only ${ad.activeWeeksOf6} of the last 6 weeks. Below the 4-of-6 threshold for sustained use.`,
       method: 'Weeks with at least one prompt, from local capture. No self-report.'
     });
 
@@ -875,7 +875,7 @@
     L.push({
       k: 'What is it worth?',
       v: v.responses
-        ? `Estimated ${v.estHoursLow}–${v.estHoursHigh} hours saved this period (central ${v.estHours}). Based on ${v.responses} point-of-use responses, mean ${v.meanMinutes} min. Confidence: ${v.confidence}.`
+        ? `Estimated ${v.estHoursLow} to ${v.estHoursHigh} hours saved this period (central ${v.estHours}). Based on ${v.responses} point-of-use responses, mean ${v.meanMinutes} min. Confidence: ${v.confidence}.`
         : 'Not measurable from this data. The point-of-use prompt is switched off, so no time-saved claim can be supported.',
       method: v.responses
         ? 'Mean self-reported minutes × number of moments where output was used, ±1.96 SE. Self-report, single device, no control group.'
@@ -894,7 +894,7 @@
     L.push({
       k: 'What could be automated?',
       v: r.workflows.repeatedPrompts.length || r.workflows.sequences.length
-        ? `${r.workflows.repeatedPrompts.length} repeated prompt shapes and ${r.workflows.sequences.length} recurring category chains — candidates for a shared agent or a built workflow.`
+        ? `${r.workflows.repeatedPrompts.length} repeated prompt shapes and ${r.workflows.sequences.length} recurring category chains, candidates for a shared agent or a built workflow.`
         : 'No repeated pattern reached the threshold this period.',
       method: 'Sequence and prompt-skeleton frequency over redacted text.'
     });
@@ -948,14 +948,14 @@
 
   VG.reportToMarkdown = function (r) {
     const L = [];
-    L.push(`# AI usage report — ${r.period.label}`);
+    L.push(`# AI usage report, ${r.period.label}`);
     L.push(`_${r.period.rangeLabel} · generated ${VG.fmtDate(r.generatedAt)}_`);
     if (r.org && (r.org.agency || r.org.division || r.org.cohort)) {
       L.push(`_${[r.org.agency, r.org.division, r.org.cohort ? 'cohort ' + r.org.cohort : ''].filter(Boolean).join(' · ')}_`);
     }
     L.push('');
     if (!r.volume.quoteShares) {
-      L.push(`> **Small sample — ${r.totals.prompts} prompts.** ${r.volume.note}`);
+      L.push(`> **Small sample, ${r.totals.prompts} prompts.** ${r.volume.note}`);
       L.push('');
     }
     L.push('## Executive summary');
@@ -986,7 +986,7 @@
       L.push('| Category | Prompts | Share |');
       L.push('| --- | ---: | ---: |');
       r.workTypes.forEach((w) =>
-        L.push(`| ${w.label} | ${w.count} | ${r.volume.quoteShares ? w.pct + '%' : '—'} |`));
+        L.push(`| ${w.label} | ${w.count} | ${r.volume.quoteShares ? w.pct + '%' : 'n/a'} |`));
       L.push('');
       if (!r.volume.quoteShares) {
         L.push('_Shares withheld: too few prompts for a percentage to mean anything._');

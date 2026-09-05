@@ -1,9 +1,9 @@
 /*
- * Vantage — surfaces.js
+ * Vantage, surfaces.js
  *
  * Detects WHICH PART of an AI platform a prompt was sent to: plain chat, a
  * Project, a custom GPT / Gem / agent, Canvas, Deep Research, code interpreter,
- * and so on — plus the agent's name and whether it is shared with a team.
+ * and so on, plus the agent's name and whether it is shared with a team.
  *
  * Every rule is declarative (regex strings + CSS selector strings) so the whole
  * surface map is JSON-serialisable and can be pushed from central policy

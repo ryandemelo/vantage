@@ -1,4 +1,4 @@
-/* Vantage — reports.js */
+/* Vantage, reports.js */
 (function () {
   'use strict';
   const VG = self.VG;
@@ -187,16 +187,16 @@
     }
     $('empty').style.display = 'none';
 
-    /* small-sample banner — a share off a handful of prompts is not a finding */
+    /* small-sample banner, a share off a handful of prompts is not a finding */
     if (!r.volume.quoteShares) {
       root.appendChild(el('div', { class: 'card', style: 'border-color:var(--warn);background:color-mix(in srgb, var(--warn) 8%, var(--surface))' }, [
-        el('strong', { text: `Small sample — ${r.totals.prompts} prompt${r.totals.prompts === 1 ? '' : 's'}` }),
+        el('strong', { text: `Small sample, ${r.totals.prompts} prompt${r.totals.prompts === 1 ? '' : 's'}` }),
         el('div', { class: 'muted', style: 'margin-top:4px', text: r.volume.note }),
         el('div', { class: 'muted', style: 'margin-top:4px', text: 'Percentages are withheld below. Quote the counts.' })
       ]));
     }
 
-    /* sample-data warning — never let a demo report be mistaken for real */
+    /* sample-data warning, never let a demo report be mistaken for real */
     const demoCount = state.events.filter((e) => e.demo).length;
     if (demoCount) {
       root.appendChild(el('div', { class: 'card', style: 'border-color:var(--warn);background:color-mix(in srgb, var(--warn) 8%, var(--surface))' }, [
@@ -205,7 +205,7 @@
       ]));
     }
 
-    /* executive summary — the version that goes in front of a minister */
+    /* executive summary, the version that goes in front of a minister */
     root.appendChild(el('div', { class: 'card stack' }, [
       el('div', { class: 'row between' }, [
         el('h2', { text: 'Executive summary' }),
@@ -279,12 +279,12 @@
           ['Longest conversation', u.longestConversation + ' turns', ''],
           ['Median time to first token', u.medianFirstTokenMs ? (u.medianFirstTokenMs / 1000).toFixed(1) + 's' : 'n/a', 'perceived responsiveness'],
           ['Substantial copies', String(u.substantialCopies), 'the population the value estimate extrapolates over'],
-          ['Copy-out rate', u.copyRate + '%', 'output taken into other work — a proxy for usefulness'],
-          ['Regenerate rate', u.regenerateRate + '%', u.regenerateRate > 12 ? 'high — answers often missed first time' : 'normal'],
+          ['Copy-out rate', u.copyRate + '%', 'output taken into other work, a proxy for usefulness'],
+          ['Regenerate rate', u.regenerateRate + '%', u.regenerateRate > 12 ? 'high, answers often missed first time' : 'normal'],
           ['Attachment rate', u.attachmentRate + '%', 'prompts that included a file'],
           ['Characters copied out',
-            u.copiedCharsMeasured ? String(u.copiedOutChars) : '—',
-            u.copiedCharsMeasured ? '' : 'not measured — the DOM scope is set to composer only']
+            u.copiedCharsMeasured ? String(u.copiedOutChars) : 'not measured',
+            u.copiedCharsMeasured ? '' : 'not measured, the DOM scope is set to composer only']
         ]
       )
     ]));
@@ -296,7 +296,7 @@
         el('h2', { text: 'Sustained use' }),
         el('span', {
           class: 'pill',
-          text: ad.lapsed ? `lapsed — ${ad.daysSinceLastUse} days quiet`
+          text: ad.lapsed ? `lapsed, ${ad.daysSinceLastUse} days quiet`
             : ad.sustained ? 'past novelty threshold' : 'not yet sustained',
           style: ad.lapsed ? 'background:color-mix(in srgb,var(--bad) 16%,transparent);color:var(--bad)'
             : ad.sustained ? 'background:color-mix(in srgb,var(--good) 16%,transparent);color:var(--good)'
@@ -336,16 +336,16 @@
          { label: 'Shared' }, { label: 'Main use' }],
         pf.agents.slice(0, 15).map((a) => [
           a.name, a.type, a.siteLabel, String(a.prompts), String(a.conversations),
-          a.copyRate + '%', a.reworkRate + '%', a.shared ? 'yes' : '—', a.topCategory
+          a.copyRate + '%', a.reworkRate + '%', a.shared ? 'yes' : 'no', a.topCategory
         ])
       ));
       platformKids.push(el('div', { class: 'faint', text: 'High prompts with a low “output used” rate means the asset is being tried, not relied on. Orphans are candidates to retire.' }));
     } else {
-      platformKids.push(el('div', { class: 'faint', text: 'No Projects, custom GPTs, Gems or agents were used this period — nothing is being reused or shared.' }));
+      platformKids.push(el('div', { class: 'faint', text: 'No Projects, custom GPTs, Gems or agents were used this period, nothing is being reused or shared.' }));
     }
     root.appendChild(el('div', { class: 'card stack' }, platformKids));
 
-    /* what the tool is not being used for, and how the first attempts went —
+    /* what the tool is not being used for, and how the first attempts went ,
        at low volume these two say more than the work profile does */
     if (r.untapped.length || r.firstExperience) {
       const kids = [el('h2', { text: 'Gaps and first attempts' })];
@@ -357,7 +357,7 @@
             style: 'margin-right:6px',
             text: c.label
           }))));
-        kids.push(el('div', { class: 'faint', text: 'At low volume this list is the more useful half of the work profile — it is the map of work nobody has brought to the tool yet.' }));
+        kids.push(el('div', { class: 'faint', text: 'At low volume this list is the more useful half of the work profile, it is the map of work nobody has brought to the tool yet.' }));
       }
       if (r.firstExperience && r.firstExperience.prompts >= 3) {
         kids.push(el('h3', { text: 'How the first attempts went', style: 'margin-top:10px' }));
@@ -382,7 +382,7 @@
     ];
     if (v.responses) {
       valueKids.push(el('div', { class: 'tiles' }, [
-        tile('Est. hours saved', `${v.estHoursLow}–${v.estHoursHigh}`),
+        tile('Est. hours saved', `${v.estHoursLow} to ${v.estHoursHigh}`),
         tile('Mean per use', v.meanMinutes + ' min'),
         tile('Responses', v.responses),
         tile('Response rate', v.responseRate + '%')
@@ -395,7 +395,7 @@
     } else {
       valueKids.push(el('div', { class: 'faint', text: settings.valueSurveyEnabled
         ? 'The point-of-use prompt is on but has not been answered yet. It appears only after output is copied out, at most once every few hours.'
-        : 'The point-of-use prompt is switched off (Settings → Value measurement). Without it, no time-saved figure in this report can be defended — everything else here is a behavioural proxy.' }));
+        : 'The point-of-use prompt is switched off (Settings → Value measurement). Without it, no time-saved figure in this report can be defended, everything else here is a behavioural proxy.' }));
     }
     root.appendChild(el('div', { class: 'card stack' }, valueKids));
 
@@ -441,7 +441,7 @@
       el('div', { class: 'faint', text: 'Account tier is read from the site’s own account menu and compared against your organisation’s domains. The address itself is never stored.' })
     ].filter(Boolean)));
 
-    /* classification quality — read this before quoting the work profile */
+    /* classification quality, read this before quoting the work profile */
     const cq = r.classifier;
     root.appendChild(el('div', { class: 'card stack' }, [
       el('h2', { text: 'Classification quality' }),
@@ -451,7 +451,7 @@
           ['Uncategorised', cq.uncategorisedRate + '%', cq.uncategorisedRate > 20 ? 'taxonomy needs tuning for your vocabulary' : 'acceptable'],
           ['Topic inherited from thread', cq.inheritedRate + '%', 'short follow-up turns borrowing the thread topic'],
           ['Low confidence', cq.lowConfidenceRate + '%', cq.lowConfidenceRate > 30 ? 'treat the work profile as indicative only' : 'acceptable'],
-          ['Prompts with a second intent', String(cq.secondaryIntents.reduce((n, x) => n + x.count, 0)), cq.secondaryIntents.length ? 'commonly ' + cq.secondaryIntents.slice(0, 2).map((x) => x.label.toLowerCase()).join(' and ') : '—']
+          ['Prompts with a second intent', String(cq.secondaryIntents.reduce((n, x) => n + x.count, 0)), cq.secondaryIntents.length ? 'commonly ' + cq.secondaryIntents.slice(0, 2).map((x) => x.label.toLowerCase()).join(' and ') : 'none']
         ]
       )
     ]));
@@ -495,7 +495,7 @@
       ]));
     }
 
-    /* caveats — print these under the numbers, always */
+    /* caveats, print these under the numbers, always */
     root.appendChild(el('div', { class: 'card stack' }, [
       el('h2', { text: 'What this data cannot tell you' }),
       el('ul', { class: 'muted', style: 'margin:0;padding-left:18px;line-height:1.7' },
@@ -543,7 +543,7 @@
   function emailReport() {
     const r = state.report;
     const to = (settings && settings.reportEmailTo) || '';
-    const subject = `AI usage report — ${r.period.label} (${r.period.rangeLabel})`;
+    const subject = `AI usage report, ${r.period.label} (${r.period.rangeLabel})`;
     const body = [
       VG.summarise(r),
       '',
@@ -558,7 +558,7 @@
     const url = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     if (url.length > 1900) {
       navigator.clipboard.writeText(body);
-      flash('Report too long for a mail link — copied to clipboard instead');
+      flash('Report too long for a mail link, copied to clipboard instead');
       window.location.href = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}`;
       return;
     }

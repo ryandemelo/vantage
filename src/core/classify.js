@@ -1,11 +1,11 @@
 /*
- * Vantage — classify.js
+ * Vantage, classify.js
  * Local, deterministic work-type classifier. No network call, no model
  * download: a weighted keyword/pattern scorer over the taxonomy in schema.js.
  *
  * Deliberately simple. It runs on the REDACTED text, is auditable line by line,
  * and an admin can tune it by adding terms via policy. Swap this file for an
- * LLM-backed classifier later without touching anything else — the contract is
+ * LLM-backed classifier later without touching anything else, the contract is
  * classify(text, settings) -> {id, label, confidence, runnerUp, scores}.
  */
 (function (root) {

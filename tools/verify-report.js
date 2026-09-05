@@ -1,5 +1,5 @@
 /*
- * Vantage — verify an exported report.
+ * Vantage, verify an exported report.
  *
  *   node tools/verify-report.js <report.md> --key <signing key>
  *   VANTAGE_KEY=<key> node tools/verify-report.js <report.md>

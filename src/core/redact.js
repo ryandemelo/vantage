@@ -1,5 +1,5 @@
 /*
- * Vantage — redact.js
+ * Vantage, redact.js
  * Strips identifiers and secrets out of prompt text BEFORE anything is stored.
  * Runs entirely in the page's content script; the unredacted string never
  * crosses a message boundary.
@@ -109,7 +109,7 @@
     {
       id: 'assigned_secret',
       label: 'Assigned secret',
-      // password = "...", api_key: '...', token=... — captures the value only.
+      // password = "...", api_key: '...', token=..., captures the value only.
       re: /\b(pass(?:word|wd)?|secret|api[_-]?key|apikey|access[_-]?token|auth[_-]?token|bearer|client[_-]?secret|conn(?:ection)?[_-]?string)\b\s*[:=]\s*["']?([^\s"'`,;]{6,})["']?/gi,
       replaceFn: (m, key) => `${key}=[SECRET]`,
       default: true
