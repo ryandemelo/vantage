@@ -1,0 +1,103 @@
+<!doctype html>
+<!--
+  Offline stand-in for the ChatGPT UI, built to the DOM shape the chatgpt
+  adapter targets. Used by tools/e2e-fixture.js to exercise the extension
+  end to end without a login. It is NOT a claim about the live site — only
+  tools/probe-live.js against the real, signed-in page can settle that.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>ChatGPT</title>
+  <style>
+    body { font: 14px system-ui, sans-serif; margin: 0; background: #fff; color: #111; }
+    main { max-width: 720px; margin: 0 auto; padding: 20px 16px 140px; }
+    .turn { padding: 12px 14px; border-radius: 10px; margin-bottom: 10px; white-space: pre-wrap; }
+    [data-message-author-role="user"] { background: #f1f3f5; }
+    [data-message-author-role="assistant"] { background: #fff; border: 1px solid #e6e8eb; }
+    form { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-top: 1px solid #e6e8eb; padding: 12px; }
+    .composer { max-width: 720px; margin: 0 auto; display: flex; gap: 8px; align-items: flex-end; }
+    #prompt-textarea { flex: 1; min-height: 40px; border: 1px solid #d5d9de; border-radius: 10px; padding: 10px 12px; outline: none; }
+    button { padding: 9px 14px; border-radius: 9px; border: 1px solid #d5d9de; background: #111; color: #fff; cursor: pointer; }
+    header { max-width: 720px; margin: 0 auto; padding: 12px 16px; display: flex; gap: 10px; align-items: center; }
+    header button { background: #fff; color: #111; }
+    pre { background: #0f1319; color: #e8ecf2; padding: 10px; border-radius: 8px; overflow: auto; }
+  </style>
+</head>
+<body>
+  <header>
+    <button data-testid="model-switcher-dropdown-button">GPT-5 Thinking</button>
+    <span id="gizmo" data-testid="gizmo-name" style="display:none">Policy Brief Builder</span>
+    <span id="acct" style="display:none"><span class="email">j.rivera@acme.example</span></span>
+  </header>
+
+  <main>
+    <div role="presentation" id="thread"></div>
+  </main>
+
+  <form onsubmit="return false">
+    <div class="composer">
+      <div id="prompt-textarea" contenteditable="true" data-testid="composer" role="textbox"></div>
+      <button data-testid="send-button" type="button">Send</button>
+    </div>
+  </form>
+
+<script>
+  const thread = document.getElementById('thread');
+
+  function addUserTurn(text) {
+    const d = document.createElement('div');
+    d.className = 'turn';
+    d.setAttribute('data-message-author-role', 'user');
+    d.setAttribute('data-turn', 'user');
+    d.textContent = text;
+    thread.appendChild(d);
+  }
+
+  // Streams a reply token by token so the extension's first-token and
+  // quiescence timings have something real to measure.
+  function streamAssistantTurn(hasCode) {
+    const d = document.createElement('div');
+    d.className = 'turn';
+    d.setAttribute('data-message-author-role', 'assistant');
+    d.setAttribute('data-turn', 'assistant');
+    thread.appendChild(d);
+
+    const words = ('Here is a considered response to that request. It walks through the ' +
+      'relevant points in order and sets out what to do next, with the reasoning made ' +
+      'explicit so it can be checked.').split(' ');
+    let i = 0;
+    const timer = setInterval(() => {
+      d.textContent += (i ? ' ' : '') + words[i++];
+      if (i >= words.length) {
+        clearInterval(timer);
+        if (hasCode) {
+          const pre = document.createElement('pre');
+          pre.innerHTML = '<code>def handler(event):\n    return {"ok": True}</code>';
+          d.appendChild(pre);
+        }
+        d.setAttribute('data-done', '1');
+      }
+    }, 40);
+  }
+
+  function submit() {
+    const el = document.getElementById('prompt-textarea');
+    const text = el.innerText.trim();
+    if (!text) return;
+    // The real site clears the composer on submit; do the same so the
+    // extension's read-before-clear ordering is genuinely exercised.
+    setTimeout(() => {
+      addUserTurn(text);
+      el.innerText = '';
+      setTimeout(() => streamAssistantTurn(/```|function|def |refactor/i.test(text)), 250);
+    }, 0);
+  }
+
+  document.querySelector('[data-testid="send-button"]').addEventListener('click', submit);
+  document.getElementById('prompt-textarea').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(); }
+  });
+</script>
+</body>
+</html>
