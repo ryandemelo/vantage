@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Check syntax of every script
+        run: |
+          for f in $(find src tests tools -name '*.js'); do
+            node --check "$f" || exit 1
+          done
+
+      - name: Validate manifest and policy schema
+        run: |
+          node -e "JSON.parse(require('fs').readFileSync('manifest.json','utf8'))"
+          node -e "JSON.parse(require('fs').readFileSync('policy/managed_schema.json','utf8'))"
+
+      - name: Unit checks
+        run: node tests/smoke.js
+
+      - name: Install browser
+        run: |
+          npm install
+          npx playwright install --with-deps chromium
+
+      - name: End to end checks
+        run: node tools/e2e-fixture.js
+
+      - name: Probe is in sync with the adapters
+        run: |
+          node tools/make-probe.js
+          git diff --exit-code tools/selector-probe.js
+
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: No em dashes in documentation
+        run: |
+          if grep -rn "—" --include="*.md" . ; then
+            echo "Em dashes found. Use plain punctuation."
+            exit 1
+          fi
