@@ -15,6 +15,14 @@ node tools/e2e-fixture.js
 
 Load the extension with Load unpacked from `edge://extensions` or `chrome://extensions`, pointing at the repository root.
 
+### A note on automated browser testing
+
+Recent stable Chrome and Edge no longer honour the `--load-extension` command line switch. Passing it is silently ignored and the extension does not appear, with no error. A minimal test extension behaves the same way, so if you see this it is the browser rather than your change.
+
+This affects automated testing only. Loading through the Load unpacked button works normally, and so does force installing through enterprise policy.
+
+`tools/e2e-fixture.js` and `tools/probe-live.js` therefore use the Chromium build that Playwright downloads, which still accepts the switch. It is the same engine as the shipping browsers. Do not switch them to a locally installed Chrome or Edge, because they will report zero extensions loaded and every check after that will fail for the wrong reason.
+
 ## What this project cares about
 
 Read these before proposing a change. They are the constraints that shaped most of the code.
