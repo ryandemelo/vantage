@@ -89,27 +89,77 @@ const targets = wanted.length ? wanted : Object.keys(SITES);
     await page.waitForSelector('html[data-vantage]', { timeout: 20000 }).catch(() => {});
 
     console.log('  waiting for a usable composer. SIGN IN in the window if prompted…');
+    await page.bringToFront().catch(() => {});
+
+    /*
+     * The terminal is not where the person is looking, and when this runs in
+     * the background they never see it at all. Put the instructions on the
+     * page instead, and keep them there until a composer appears.
+     */
+    const banner = async () => {
+      await page.evaluate((site) => {
+        if (document.getElementById('vantage-probe-banner')) return;
+        const b = document.createElement('div');
+        b.id = 'vantage-probe-banner';
+        b.style.cssText = [
+          'position:fixed', 'inset:0 0 auto 0', 'z-index:2147483647',
+          'background:#111827', 'color:#fff', 'padding:14px 18px',
+          'font:14px/1.5 -apple-system,Segoe UI,system-ui,sans-serif',
+          'box-shadow:0 2px 14px rgba(0,0,0,.35)'
+        ].join(';');
+        b.innerHTML =
+          '<div style="font-weight:650;margin-bottom:6px">Vantage selector check, waiting on you (' + site + ')</div>' +
+          '<div style="opacity:.9">1. Sign in.&nbsp;&nbsp;' +
+          '2. Open a conversation that <b>already has a reply in it</b>, not a new chat.&nbsp;&nbsp;' +
+          '3. Type a few characters in the message box and leave them there.</div>' +
+          '<div style="opacity:.65;margin-top:6px;font-size:12px">' +
+          'This banner disappears by itself once the page is ready. Nothing is sent anywhere.</div>';
+        document.documentElement.appendChild(b);
+      }, key).catch(() => {});
+    };
+
     let ready = false;
     const deadline = Date.now() + LOGIN_TIMEOUT_MS;
-    let told = false;
     while (Date.now() < deadline && !ready) {
-      ready = await page.evaluate(() =>
-        !!document.querySelector('div[contenteditable="true"], textarea')
-      ).catch(() => false);
-      if (!ready) {
-        if (!told) {
-          told = true;
-          console.log('  (still no composer, this page needs a signed-in session)');
-        }
-        await page.waitForTimeout(2000);
-      }
+      await banner();   // survives navigation, so re-apply each pass
+      ready = await page.evaluate(() => {
+        const el = document.querySelector('div[contenteditable="true"], textarea');
+        if (!el) return false;
+        // A visible, interactive box. Search fields on a marketing page do not
+        // count, and neither does a hidden one.
+        const r = el.getBoundingClientRect();
+        return r.width > 200 && r.height > 20;
+      }).catch(() => false);
+      if (!ready) await page.waitForTimeout(2000);
     }
+
+    // Is this a signed out page? Worth knowing, because a missing composer on
+    // a marketing page is not a stale selector.
+    const auth = await page.evaluate(() => {
+      const t = (document.body.innerText || '').slice(0, 4000).toLowerCase();
+      const hasLogin = /\blog ?in\b|\bsign ?up\b|\bsign ?in\b/.test(t);
+      const hasComposer = !!document.querySelector('div[contenteditable="true"], textarea');
+      return { hasLogin, hasComposer, path: location.pathname };
+    }).catch(() => ({ hasLogin: false, hasComposer: false, path: '' }));
+    const signedOut = auth.hasLogin && !auth.hasComposer;
+
+    await page.evaluate(() => {
+      const b = document.getElementById('vantage-probe-banner');
+      if (b) b.remove();
+    }).catch(() => {});
     if (!ready) {
-      console.log('  timed out. NOT SIGNED IN, skipping ' + key);
-      blocks.push(`### ${key}\nNOT SIGNED IN, no composer appeared within ${LOGIN_TIMEOUT_MS / 1000}s.\n` +
-        `This says nothing about the selectors. Sign in and re-run.\n`);
+      const why = signedOut
+        ? 'the page is showing a sign in screen'
+        : 'no usable composer appeared';
+      console.log('  skipped: ' + why);
+      blocks.push(`### ${key}\nNOT CHECKED, ${why} within ${LOGIN_TIMEOUT_MS / 1000}s ` +
+        `(path ${auth.path}).\nThis says nothing about whether the selectors are correct. ` +
+        `Sign in, open a conversation with a reply in it, and re-run.\n`);
       await page.close();
       continue;
+    }
+    if (signedOut) {
+      console.log('  warning: this looks like a signed out page, results may be misleading');
     }
     await page.waitForTimeout(2500);
 
