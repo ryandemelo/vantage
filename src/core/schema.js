@@ -336,8 +336,10 @@
        message, so a user cannot point their own reports at their own server.
        Off unless an administrator turns it on. ------------------------- */
     uploadEnabled: false,
-    uploadUrl: '',                       // https endpoint, e.g. a blob store or collector
-    uploadAuthHeader: '',                // sent verbatim as Authorization
+    uploadUrl: '',                       // https target. May contain {device} {period} {unit} {date}
+    uploadMethod: 'PUT',                 // PUT suits object storage, POST suits a receiver
+    uploadHeaders: {},                   // extra request headers, for example x-ms-blob-type
+    uploadAuthHeader: '',                // sent verbatim as Authorization, omit when the URL is presigned
     uploadCadence: 'weekly',             // daily | weekly | monthly
     uploadContent: 'aggregate',          // summary | aggregate | events
     uploadIncludePromptText: false,      // extra gate on top of uploadContent 'events'
@@ -346,6 +348,11 @@
        verifier can check any report; otherwise each install signs with its own
        generated key and only it can verify its own output. */
     reportSigningKey: '',
+
+    /* Random per install identifier. Not an identity and never derived from
+       one. It exists so that devices writing straight to object storage land
+       at distinct objects instead of overwriting each other. */
+    installId: '',
 
     /* Point-of-value micro-survey. Off until an org signs it off. */
     valueSurveyEnabled: false,
@@ -359,7 +366,7 @@
    * change where data goes or whether it goes at all.
    */
   VG.POLICY_ONLY_KEYS = [
-    'uploadEnabled', 'uploadUrl', 'uploadAuthHeader',
+    'uploadEnabled', 'uploadUrl', 'uploadMethod', 'uploadHeaders', 'uploadAuthHeader',
     'uploadCadence', 'uploadContent', 'uploadIncludePromptText'
   ];
 
@@ -374,7 +381,7 @@
     'orgUnit', 'orgDivision', 'orgCohort', 'orgDomainMap',
     'corporateDomains', 'deriveIdentity',
     'valueSurveyEnabled', 'valueSurveySamplePercent', 'valueSurveyCooldownMin',
-    'uploadEnabled', 'uploadUrl', 'uploadAuthHeader',
+    'uploadEnabled', 'uploadUrl', 'uploadMethod', 'uploadHeaders', 'uploadAuthHeader',
     'uploadCadence', 'uploadContent', 'uploadIncludePromptText'
   ];
 

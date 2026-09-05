@@ -151,6 +151,47 @@
     return body;
   };
 
+  /*
+   * Target URL.
+   *
+   * Writing straight to object storage with no server in between means every
+   * upload has to land at its own object, otherwise each period overwrites the
+   * last. The configured URL may therefore carry placeholders, which are
+   * substituted per upload:
+   *
+   *   {device}  the pseudonymous device key
+   *   {unit}    business unit, lowercased and slugged
+   *   {period}  the period id, for example w-2026-09-01
+   *   {date}    the date the upload is sent
+   *
+   * A presigned or SAS query string is preserved, since substitution is on the
+   * whole string and the placeholders sit in the path.
+   */
+  function slug(v, fallback) {
+    const out = String(v || '').toLowerCase().replace(/[^a-z0-9._-]+/g, '-')
+      .replace(/^-+|-+$/g, '').slice(0, 60);
+    return out || fallback;
+  }
+
+  VG.uploadTarget = function (settings, period, org) {
+    const raw = String(settings.uploadUrl || '');
+    return raw
+      .replace(/\{device\}/g, slug((org && org.userKey) || settings.installId, 'unknown-device'))
+      .replace(/\{unit\}/g, slug((org && org.businessUnit) || settings.orgUnit, 'unassigned'))
+      .replace(/\{period\}/g, slug(period && period.id, 'unknown-period'))
+      .replace(/\{date\}/g, VG.localDay(Date.now()));
+  };
+
+  /* Headers for one upload. Authorization is omitted when the URL is already
+   * presigned, because sending both makes some object stores reject it. */
+  VG.uploadHeaders = function (settings) {
+    const h = { 'Content-Type': 'application/json' };
+    const extra = settings.uploadHeaders || {};
+    Object.keys(extra).forEach((k) => { h[k] = String(extra[k]); });
+    if (settings.uploadAuthHeader) h.Authorization = settings.uploadAuthHeader;
+    return h;
+  };
+
   /** A short, human-readable description for the transparency panel. */
   VG.uploadDescription = function (settings) {
     if (!settings.uploadEnabled || !settings.uploadUrl) return null;

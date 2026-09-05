@@ -493,12 +493,30 @@
     },
     "uploadUrl": {
       "title": "HTTPS endpoint that receives the POST",
-      "description": "A collector, blob store or API gateway. The extension also needs host permission for this origin: either add it to host_permissions in an internally packaged build, or grant it via the ExtensionSettings policy's runtime_allowed_hosts.",
+      "description": "Where each report is written. May contain the placeholders {device}, {unit}, {period} and {date}, which are substituted per upload so each period lands at its own object rather than overwriting the last. A presigned or SAS query string is preserved. The extension also needs host permission for this origin, either in host_permissions in an internally packaged build or through the ExtensionSettings policy runtime_allowed_hosts.",
       "type": "string"
+    },
+    "uploadMethod": {
+      "title": "HTTP method used to write",
+      "description": "PUT for object storage, which is the default. POST if you are pointing at a receiver that expects it.",
+      "type": "string",
+      "enum": [
+        "PUT",
+        "POST"
+      ]
+    },
+    "uploadHeaders": {
+      "title": "Extra request headers",
+      "description": "Needed by some object stores. Azure Blob requires x-ms-blob-type set to BlockBlob.",
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
     },
     "uploadAuthHeader": {
       "title": "Value sent verbatim as the Authorization header",
-      "type": "string"
+      "type": "string",
+      "description": "Sent verbatim as the Authorization header. Leave empty when the URL is already presigned, because sending both causes some object stores to reject the request."
     },
     "uploadCadence": {
       "title": "How often a completed period is sent",
