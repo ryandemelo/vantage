@@ -87,6 +87,8 @@ const PROMPTS = [
   });
   console.log('\nmanifest');
   check('extension accepted by Chrome', loaded.length === 1, JSON.stringify(loaded));
+  check('extension name is free of dash punctuation',
+    loaded.length === 1 && !/[\u2013\u2014]/.test(loaded[0].name || ''), JSON.stringify(loaded));
   if (!loaded.length) {
     console.log('\n  Chrome rejected the manifest. Nothing below can pass. ' +
                 'Most likely the managed_schema uses a construct the policy parser refuses.');
