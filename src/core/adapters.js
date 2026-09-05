@@ -18,7 +18,7 @@
   'use strict';
   const VG = (root.VG = root.VG || {});
 
-  VG.CONFIG_REVISION = 5;
+  VG.CONFIG_REVISION = 6;
 
   VG.BUILTIN_ADAPTERS = [
     {
@@ -84,7 +84,7 @@
       id: 'chatgpt',
       label: 'ChatGPT',
       colour: '#10A37F',
-      revision: 5,
+      revision: 6,
       hosts: ['chatgpt.com', 'chat.openai.com'],
       selectors: {
         composer: [
@@ -100,8 +100,18 @@
         thread: ['main', 'div[role="presentation"]'],
         userTurn: ['[data-message-author-role="user"]', '[data-turn="user"]', 'article[data-turn-id][data-turn="user"]'],
         assistantTurn: ['[data-message-author-role="assistant"]', '[data-turn="assistant"]'],
-        model: ['[data-testid="model-switcher-dropdown-button"]', 'button[aria-label*="Model" i]'],
-        regenerate: ['button[data-testid*="regenerate" i]', 'button[aria-label*="Regenerate" i]'],
+        model: [
+          'button[aria-label*="Model" i]',
+          '[data-testid="model-switcher-dropdown-button"]',
+          'button[data-testid*="model" i]'
+        ],
+        // Only rendered on hover over a reply, so a probe on a static page
+        // reports this missing even when the selector is correct.
+        regenerate: [
+          'button[data-testid*="regenerate" i]',
+          'button[aria-label*="Regenerate" i]',
+          'button[aria-label*="Try again" i]'
+        ],
         attachment: ['div[data-testid*="attachment" i]', 'button[aria-label*="Remove file" i]']
       },
       surfaces: [
