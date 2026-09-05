@@ -1,7 +1,7 @@
 /*
- * Vantage — db.js
+ * Vantage, db.js
  * IndexedDB wrapper. Shared by the service worker and by extension pages
- * (popup / reports / options) — they all live on the same extension origin,
+ * (popup / reports / options), they all live on the same extension origin,
  * so they read the same database directly.
  *
  * Nothing in here talks to the network. Ever.

@@ -1,4 +1,4 @@
-/* Vantage — options.js */
+/* Vantage, options.js */
 (function () {
   'use strict';
   const VG = self.VG;
@@ -140,7 +140,7 @@
   const STATUS_LABEL = {
     ok: ['capturing', 'var(--good)'],
     idle: ['visited, nothing captured yet', 'var(--muted)'],
-    broken: ['composer not found — selector may be stale', 'var(--bad)'],
+    broken: ['composer not found, selector may be stale', 'var(--bad)'],
     unknown: ['not visited yet', 'var(--faint)']
   };
 
@@ -228,7 +228,7 @@
 
   /*
    * Transparency panel. If reports leave the device, the person they are about
-   * must be able to see that, where they go, how often and what they contain —
+   * must be able to see that, where they go, how often and what they contain ,
    * without digging. Shown whenever upload is enabled and never hideable.
    */
   async function loadUpload() {
@@ -262,10 +262,10 @@
       ['Destination', d.host],
       ['Frequency', d.when],
       ['Contents', d.what],
-      ['Endpoint permitted', st.permitted ? 'yes' : 'NO — nothing can be sent until this is granted'],
+      ['Endpoint permitted', st.permitted ? 'yes' : 'NO, nothing can be sent until this is granted'],
       ['Waiting to send', st.pending.length ? st.pending.join(', ') : 'nothing outstanding'],
       ['Last sent', st.lastUploadAt ? new Date(st.lastUploadAt).toLocaleString() : 'never'],
-      ['Last result', st.lastStatus || '—']
+      ['Last result', st.lastStatus || 'nothing yet']
     ];
     const table = document.createElement('table');
     const tb = document.createElement('tbody');
@@ -349,7 +349,7 @@
         runAt: 'document_idle'
       }]);
     } catch (e) {
-      /* already registered — fine */
+      /* already registered, fine */
     }
 
     ['cName', 'cHost', 'cComposer', 'cSend'].forEach((k) => { $(k).value = ''; });
@@ -487,14 +487,14 @@
       const k = settings.reportSigningKey || '';
       $('keyState').textContent = k
         ? (locked('reportSigningKey') ? 'key: pushed by policy' : 'key: local to this device')
-        : 'key: none — reports will not be marked';
+        : 'key: none, reports will not be marked';
     };
     keyPill();
 
     $('copyKey').addEventListener('click', async () => {
       if (!settings.reportSigningKey) { alert('No signing key set.'); return; }
       await navigator.clipboard.writeText(settings.reportSigningKey);
-      alert('Signing key copied. Anyone holding this key can verify — and can also produce — a report that passes.');
+      alert('Signing key copied. Anyone holding this key can verify, and can also produce, a report that passes.');
     });
 
     $('rotateKey').addEventListener('click', async () => {
@@ -550,7 +550,7 @@
       const ok = await chrome.permissions.request({
         origins: ['https://' + st.description.host + '/*']
       }).catch(() => false);
-      if (!ok) alert('Permission not granted — nothing will be sent.');
+      if (!ok) alert('Permission not granted, nothing will be sent.');
       loadUpload();
     });
 

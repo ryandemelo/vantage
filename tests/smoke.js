@@ -351,7 +351,7 @@ console.log('\nlow volume behaviour');
     narrative.indexOf('software engineering (3)') !== -1, '');
   const md = VG.reportToMarkdown(rFew);
   check('markdown carries a small-sample banner', md.indexOf('**Small sample') !== -1, '');
-  check('markdown withholds shares', md.indexOf('| Software engineering | 3 | — |') !== -1, '');
+  check('markdown withholds shares', md.indexOf('| Software engineering | 3 | n/a |') !== -1, '');
   check('markdown lists the untapped categories', md.indexOf('no use at all') !== -1, '');
   check('exec summary leads with how much there is to go on',
     VG.executiveSummary(rFew)[0].k.indexOf('How much') !== -1, '');

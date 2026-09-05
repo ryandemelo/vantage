@@ -1,10 +1,10 @@
 /*
- * Vantage — upload.js
+ * Vantage, upload.js
  * Scheduled push of finished reports to an internal endpoint.
  *
  * This is the one part of the extension that talks to the network, and it is
- * off unless an administrator turns it on. Everything that governs it —
- * whether it runs, where it goes, what it contains — is a POLICY-ONLY setting
+ * off unless an administrator turns it on. Everything that governs it ,
+ * whether it runs, where it goes, what it contains, is a POLICY-ONLY setting
  * (see VG.POLICY_ONLY_KEYS), so a user cannot enable it, redirect it, or widen
  * what it sends.
  *
@@ -12,7 +12,7 @@
  * which completed periods have not been sent yet and sends the oldest first,
  * one per wake. A browser that was closed for three weeks sends the three
  * missed weeks the next time it runs. The trigger is an alarm in the service
- * worker, so it does not depend on an AI site — or any tab — ever being opened.
+ * worker, so it does not depend on an AI site, or any tab, ever being opened.
  */
 (function (root) {
   'use strict';
@@ -53,7 +53,7 @@
 
   /**
    * Completed periods that have not been sent, oldest first.
-   * The period containing `now` is deliberately excluded — it is not finished.
+   * The period containing `now` is deliberately excluded, it is not finished.
    */
   VG.pendingPeriods = function (settings, state, now) {
     const t = now || Date.now();
@@ -158,7 +158,7 @@
     try { host = new URL(settings.uploadUrl).host; } catch (e) { /* keep raw */ }
     const what = {
       summary: 'a written summary and the headline numbers',
-      aggregate: 'aggregated counts and rates — no prompt text',
+      aggregate: 'aggregated counts and rates, no prompt text',
       events: settings.uploadIncludePromptText
         ? 'every captured event, INCLUDING redacted prompt text'
         : 'every captured event, without prompt text'

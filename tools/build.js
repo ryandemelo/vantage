@@ -1,5 +1,5 @@
 /*
- * Vantage — build.
+ * Vantage, build.
  *
  *   node tools/build.js                                   # zip + crx + updates.xml
  *   CODEBASE=https://intranet.acme.example/vantage node tools/build.js
@@ -43,14 +43,14 @@ function extensionId() {
 /* ---- refuse to ship something obviously broken ---- */
 function preflight() {
   const problems = [];
-  if (!manifest.key) problems.push('manifest has no "key" — the extension id will not be stable');
-  if (!fs.existsSync(KEY)) problems.push('keys/vantage.pem is missing — cannot sign a crx');
+  if (!manifest.key) problems.push('manifest has no "key", the extension id will not be stable');
+  if (!fs.existsSync(KEY)) problems.push('keys/vantage.pem is missing, cannot sign a crx');
 
   const csp = (manifest.content_security_policy || {}).extension_pages || '';
   const hosts = manifest.host_permissions || [];
   // If upload is going to be used, the endpoint origin has to be reachable.
   if (csp.indexOf('https:') === -1) {
-    problems.push('CSP does not allow https: — scheduled upload will be blocked');
+    problems.push('CSP does not allow https:, scheduled upload will be blocked');
   }
   if (!hosts.some((h) => h.indexOf('claude.ai') !== -1)) {
     problems.push('host_permissions no longer covers claude.ai');

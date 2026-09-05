@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnj6sC3Ew4DylMi0c5O+9fhscomZt9dLHLIzvkp6BX6W9wJahTqL+HNz73dnCovhdpj6b5hh5tTvlS5TM6I4g/P3uotcQnpDZzCv1OUJEqB6wpB+yXosY/YYadjTSQm75rKeI66JCsZcrhQzs/c37iqViujqLy1c9XfVUNUHMx5lDY7ND7exph4VZ9AYannEPCTpwMSOBDf21SvgdVlz9dqPcuaTUOtxEcLCzSqi3UDIIzKuyDMWht8n5wjEL1XAXsjEnL0QTbrwOB3qOTL0bD3wlJUauTlvwLQOafy5vnZE1xz3F76S032EDRzZMrjQe0S9ZQtQbiDSEEXMn207W3QIDAQAB",
-  "name": "Vantage \u2014 AI Usage Insights",
+  "name": "Vantage: AI usage insights",
   "short_name": "Vantage",
   "version": "0.1.0",
   "description": "Local-only visibility into how you use Claude, ChatGPT and Gemini. Redacts sensitive data before anything is stored. Weekly and monthly reports.",
@@ -61,7 +61,7 @@
   ],
   "action": {
     "default_popup": "src/ui/popup.html",
-    "default_title": "Vantage \u2014 AI Usage Insights",
+    "default_title": "Vantage: AI usage insights",
     "default_icon": {
       "16": "icons/icon16.png",
       "32": "icons/icon32.png",

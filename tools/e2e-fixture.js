@@ -1,5 +1,5 @@
 /*
- * Vantage — offline end-to-end test.
+ * Vantage, offline end-to-end test.
  *
  * Loads the real unpacked extension into Chromium, serves a local fixture at
  * https://chatgpt.com/ so the hostname matches the adapter, sends prompts the
@@ -10,7 +10,7 @@
  * send-button hooks, redaction, classification, thread-context inheritance,
  * surface + agent detection, service-worker messaging, and storage.
  *
- * It does NOT prove the selectors match the live ChatGPT DOM — only
+ * It does NOT prove the selectors match the live ChatGPT DOM, only
  * tools/probe-live.js against a signed-in page can settle that.
  *
  *   node tools/e2e-fixture.js
@@ -71,7 +71,7 @@ const PROMPTS = [
     timeout: 60000
   });
 
-  // Confirm Chrome actually accepted the manifest before anything else — a
+  // Confirm Chrome actually accepted the manifest before anything else, a
   // rejected manifest looks exactly like "capture is broken" further down.
   const admin = await context.newPage();
   await admin.goto('chrome://extensions/');
@@ -163,7 +163,7 @@ const PROMPTS = [
   console.log('  sent via send button: Write a SQL query grouping claims by region');
 
   console.log('\ntransparency indicator');
-  check('content script alive — toast shown on capture', toasts.filter(Boolean).length === PROMPTS.length,
+  check('content script alive, toast shown on capture', toasts.filter(Boolean).length === PROMPTS.length,
     JSON.stringify(toasts));
   const redactToast = toasts.find((t) => t && /redacted/.test(t));
   check('toast reports redactions on the sensitive prompt', !!redactToast, redactToast || '(none)');
@@ -238,7 +238,7 @@ const PROMPTS = [
     check('response text never stored', events.every((e) => !('responseText' in e)));
 
     // No stored field should contain a phrase that only ever appeared in the
-    // model's reply — a blunt check that response content is not leaking in.
+    // model's reply, a blunt check that response content is not leaking in.
     const replyPhrase = 'walks through the';
     check('no response wording anywhere in stored events',
       JSON.stringify(events).indexOf(replyPhrase) === -1, replyPhrase);

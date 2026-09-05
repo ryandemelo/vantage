@@ -1,5 +1,5 @@
 /*
- * Vantage — capture.js  (content script)
+ * Vantage, capture.js  (content script)
  *
  * Reads the composer at submit time, works out which surface of the platform
  * it was sent to, redacts it in-page, classifies it, and hands a metrics record
@@ -47,7 +47,7 @@
   }
 
   /*
-   * Settings live in the service worker, and an MV3 worker can be cold — the
+   * Settings live in the service worker, and an MV3 worker can be cold, the
    * round-trip is sometimes hundreds of milliseconds. Waiting for it before
    * attaching listeners loses the first prompts after a page load, so the
    * adapter is resolved synchronously from the built-ins first and refined
@@ -64,8 +64,8 @@
     settingsPromise = send({ type: 'GET_SETTINGS' }).then((res) => {
       settings = (res && res.settings) || VG.DEFAULT_SETTINGS;
       adapter = VG.resolveAdapter(location.hostname, settings);
-      // If the real settings say this host is not covered — the adapter was
-      // removed, or policy disabled the site — stop listening entirely rather
+      // If the real settings say this host is not covered, the adapter was
+      // removed, or policy disabled the site, stop listening entirely rather
       // than relying on a downstream guard. Nothing should be read from a page
       // we have decided not to cover.
       if (!adapter) detach();
@@ -204,7 +204,7 @@
    *
    * Under the default 'minimal' scope this never reads the response. Timing
    * comes from the fact that mutations are happening inside the assistant
-   * container and then stop — structural signals, no text pulled into memory.
+   * container and then stop, structural signals, no text pulled into memory.
    * The observer is also scoped to the assistant container where one can be
    * found, rather than the whole thread.
    */
@@ -248,7 +248,7 @@
 
     const onMutation = () => {
       // Generation has started when a NEW assistant turn element exists.
-      // Counting elements is structural — no response content is examined.
+      // Counting elements is structural, no response content is examined.
       // (Previously any mutation counted once a prior turn existed, which made
       // every turn after the first report a near-zero time to first token.)
       if (firstTokenMs === null) {
@@ -339,7 +339,7 @@
 
   /* ---------------------- point-of-value micro-survey ------------------ *
    * Fires only after the user has copied a real chunk of output out of the
-   * page — the moment something was actually used. One tap, dismissible,
+   * page, the moment something was actually used. One tap, dismissible,
    * heavily rate limited. This is the only field in the whole system that can
    * support a claim about time saved; everything else is a proxy.
    * -------------------------------------------------------------------- */
@@ -386,7 +386,7 @@
     const row = document.createElement('div');
     Object.assign(row.style, { display: 'flex', gap: '6px', flexWrap: 'wrap' });
 
-    [['None', 0], ['<15 min', 15], ['15–60 min', 60], ['>1 hr', 120]].forEach(([label, mins]) => {
+    [['None', 0], ['<15 min', 15], ['15 to 60 min', 60], ['>1 hr', 120]].forEach(([label, mins]) => {
       const b = document.createElement('button');
       b.textContent = label;
       Object.assign(b.style, {
@@ -396,7 +396,7 @@
       });
       b.addEventListener('click', async () => {
         await send({ type: 'VALUE_ANSWER', id: eventId, savedMinutes: mins });
-        q.textContent = 'Logged — thank you.';
+        q.textContent = 'Logged, thank you.';
         note.textContent = 'Stays on this device with the rest of your data.';
         row.remove();
         setTimeout(closeSurvey, 1400);
@@ -470,8 +470,8 @@
   }
 
   /*
-   * Copy-out. The metric that matters is the RATE — that output was taken into
-   * other work — not how many characters. Under the default scope the event
+   * Copy-out. The metric that matters is the RATE, that output was taken into
+   * other work, not how many characters. Under the default scope the event
    * alone is recorded and the selection is never materialised.
    */
   /*
@@ -535,7 +535,7 @@
 
   /* ------------------------------- probe ------------------------------- *
    * Same check as tools/selector-probe.js, but run against the adapter this
-   * device is actually using — including anything pushed by policy, which the
+   * device is actually using, including anything pushed by policy, which the
    * standalone snippet cannot know about. Reports selectors only.
    * -------------------------------------------------------------------- */
   function probeGroup(list) {

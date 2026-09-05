@@ -1,5 +1,5 @@
 /*
- * Vantage — live selector check against the real, signed-in sites.
+ * Vantage, live selector check against the real, signed-in sites.
  *
  * Opens a real browser window with the extension loaded and a profile that
  * persists between runs, so you sign in ONCE. It then checks every selector on
@@ -13,7 +13,7 @@
  * The window stays open and waits for you to sign in. Nothing is sent anywhere;
  * the report lists CSS selectors and counts, never prompt or response text.
  *
- * The profile lives in .playwright-profile/ — it holds real session cookies,
+ * The profile lives in .playwright-profile/, it holds real session cookies,
  * so it is gitignored and should be deleted when you are done:
  *   rm -rf .playwright-profile
  */
@@ -29,7 +29,7 @@ const LOGIN_TIMEOUT_MS = Number(process.env.LOGIN_TIMEOUT_MS || 300000); // 5 mi
 
 const TEST_PROMPT =
   'Summarise the key points of a two page policy note in five bullets. ' +
-  '(Ignore this — automated selector check.)';
+  '(Ignore this, automated selector check.)';
 
 const SITES = {
   claude: 'https://claude.ai/new',
@@ -70,7 +70,7 @@ const targets = wanted.length ? wanted : Object.keys(SITES);
     return items.map((i) => i.id);
   });
   if (!loaded.length) {
-    console.log('Chrome rejected the manifest — nothing can be probed. Fix that first.');
+    console.log('Chrome rejected the manifest, nothing can be probed. Fix that first.');
     await browserCtx.close();
     process.exit(1);
   }
@@ -88,7 +88,7 @@ const targets = wanted.length ? wanted : Object.keys(SITES);
     // The content script marks the document once it is attached.
     await page.waitForSelector('html[data-vantage]', { timeout: 20000 }).catch(() => {});
 
-    console.log('  waiting for a usable composer — SIGN IN in the window if prompted…');
+    console.log('  waiting for a usable composer. SIGN IN in the window if prompted…');
     let ready = false;
     const deadline = Date.now() + LOGIN_TIMEOUT_MS;
     let told = false;
@@ -99,14 +99,14 @@ const targets = wanted.length ? wanted : Object.keys(SITES);
       if (!ready) {
         if (!told) {
           told = true;
-          console.log('  (still no composer — this page needs a signed-in session)');
+          console.log('  (still no composer, this page needs a signed-in session)');
         }
         await page.waitForTimeout(2000);
       }
     }
     if (!ready) {
-      console.log('  timed out — NOT SIGNED IN, skipping ' + key);
-      blocks.push(`### ${key}\nNOT SIGNED IN — no composer appeared within ${LOGIN_TIMEOUT_MS / 1000}s.\n` +
+      console.log('  timed out. NOT SIGNED IN, skipping ' + key);
+      blocks.push(`### ${key}\nNOT SIGNED IN, no composer appeared within ${LOGIN_TIMEOUT_MS / 1000}s.\n` +
         `This says nothing about the selectors. Sign in and re-run.\n`);
       await page.close();
       continue;
@@ -168,7 +168,7 @@ const targets = wanted.length ? wanted : Object.keys(SITES);
     lines.push(`adapter : ${res.label} (${res.site} rev ${res.revision}, ${res.source})`);
     lines.push(`host    : ${res.host}`);
     lines.push(`path    : ${new URL(page.url()).pathname.replace(/[0-9a-f-]{8,}/gi, '<id>')}`);
-    lines.push(`context : ${hasConversation ? context.turns + ' turns visible' : 'EMPTY CHAT — turn selectors cannot match here'}` +
+    lines.push(`context : ${hasConversation ? context.turns + ' turns visible' : 'EMPTY CHAT, turn selectors cannot match here'}` +
       `${typed ? ', typed a character to reveal the send control' : ', could not type into the composer'}`);
     lines.push('');
     const realBroken = [];
@@ -199,8 +199,8 @@ const targets = wanted.length ? wanted : Object.keys(SITES);
     lines.push('');
     const verdict = realBroken.length ? 'BROKEN' : realDegraded.length ? 'WORKS, DEGRADED' : 'HEALTHY';
     lines.push('  VERDICT: ' + verdict +
-      (realBroken.length ? ' — ' + realBroken.join(', ') + ' did not resolve' : '') +
-      (!realBroken.length && realDegraded.length ? ' — ' + realDegraded.join(', ') : ''));
+      (realBroken.length ? ', ' + realBroken.join(', ') + ' did not resolve' : '') +
+      (!realBroken.length && realDegraded.length ? ', ' + realDegraded.join(', ') : ''));
     if (!hasConversation) {
       lines.push('  NOTE: this was an empty chat. Re-run with a conversation open to check');
       lines.push('        the turn, regenerate and attachment selectors.');
@@ -218,7 +218,7 @@ const targets = wanted.length ? wanted : Object.keys(SITES);
         lines.push('');
         lines.push('  CAPTURE TEST: ' + (after > before
           ? `captured (${before} -> ${after} events)`
-          : `NOT captured (still ${after} events) — the composer or send hook did not fire`));
+          : `NOT captured (still ${after} events), the composer or send hook did not fire`));
       }
     }
 
@@ -233,7 +233,7 @@ const targets = wanted.length ? wanted : Object.keys(SITES);
   const report = [
     'VANTAGE LIVE PROBE',
     'generated ' + new Date().toISOString(),
-    'selectors and counts only — no prompt or response text',
+    'selectors and counts only, no prompt or response text',
     ''
   ].concat(blocks).join('\n');
 
@@ -252,7 +252,7 @@ const targets = wanted.length ? wanted : Object.keys(SITES);
 });
 
 /* Ask the extension's own content script to probe, so the adapter under test
- * is exactly the one this device would use — policy-pushed entries included. */
+ * is exactly the one this device would use, policy-pushed entries included. */
 async function probeViaExtension(context, extId, page) {
   const ext = await context.newPage();
   await ext.goto(`chrome-extension://${extId}/src/ui/popup.html`);

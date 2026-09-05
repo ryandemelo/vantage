@@ -1,5 +1,5 @@
 /*
- * Vantage — demo.js
+ * Vantage, demo.js
  * Generates plausible sample events so a report can be shown to stakeholders
  * before real data has accumulated. Every row is flagged `demo:true` and can
  * be removed in one click. Never runs unless a user asks for it.
