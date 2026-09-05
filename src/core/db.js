@@ -18,6 +18,9 @@
       const req = indexedDB.open(VG.DB_NAME, VG.DB_VERSION);
       req.onupgradeneeded = (e) => {
         const db = e.target.result;
+        const tx = e.target.transaction;
+        const oldVersion = e.oldVersion || 0;
+
         if (!db.objectStoreNames.contains('events')) {
           const store = db.createObjectStore('events', { keyPath: 'id', autoIncrement: true });
           store.createIndex('ts', 'ts');
@@ -25,6 +28,24 @@
           store.createIndex('site', 'site');
           store.createIndex('workType', 'workType');
           store.createIndex('conversationHash', 'conversationHash');
+          return; // new database, nothing to migrate
+        }
+
+        // Existing database. Bring every row up to the current event shape so
+        // consumers do not have to guess which fields a row predates.
+        if (oldVersion < 2) {
+          const store = tx.objectStore('events');
+          let migrated = 0;
+          store.openCursor().onsuccess = (ev) => {
+            const cur = ev.target.result;
+            if (!cur) {
+              if (migrated) console.info('[Vantage] migrated ' + migrated + ' rows to event schema ' + VG.EVENT_SCHEMA_VERSION);
+              return;
+            }
+            const next = VG.migrateEvent(cur.value);
+            if (next !== cur.value) { cur.update(next); migrated++; }
+            cur.continue();
+          };
         }
       };
       req.onsuccess = () => resolve(req.result);
@@ -187,6 +208,21 @@
         store.transaction.oncomplete = () => resolve(n);
         store.transaction.onerror = () => reject(store.transaction.error);
       });
+    },
+
+    /**
+     * Release the connection. Nothing in normal operation needs this, but a
+     * held connection blocks deleteDatabase and any version upgrade, so a
+     * caller that is about to do either has to be able to let go first.
+     */
+    async close() {
+      if (!dbPromise) return false;
+      try {
+        const db = await dbPromise;
+        db.close();
+      } catch (e) { /* already gone */ }
+      dbPromise = null;
+      return true;
     },
 
     async clear() {

@@ -230,8 +230,8 @@
       band,
       quoteShares: band === 'reportable',
       note: {
-        'too-few': 'Fewer than 10 prompts. Report counts, never percentages, a share computed on this many is noise.',
-        indicative: 'Between 10 and 30 prompts. Shares are directional only; give the count alongside every percentage.',
+        'too-few': 'Fewer than 10 prompts. Report counts rather than percentages. A share computed on this many is noise.',
+        indicative: 'Between 10 and 30 prompts. Shares are directional only. Give the count alongside every percentage.',
         reportable: 'Enough volume for shares to mean something.'
       }[band],
       // At low volume the interesting question is not "what is it worth" but
@@ -266,7 +266,7 @@
       reworkRate: pct(reworked, sorted.length),
       medianWords: median(sorted.map((e) => e.promptWords || 0)),
       verdict: copied === 0
-        ? 'nothing from the first attempts was used, the most likely reason someone does not come back'
+        ? 'nothing from the first attempts was used, which is the most likely reason someone does not come back'
         : pct(copied, sorted.length) < 20
           ? 'little of the early output was used'
           : 'early attempts produced output that got used'

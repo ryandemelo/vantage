@@ -6,7 +6,14 @@ All notable changes to this project are recorded here. The format follows
 
 ## [Unreleased]
 
-Nothing yet.
+### Added
+
+- Database migration. The store now opens at version 2 and rewrites rows written by an earlier build into the current event shape, filling fields added since. Copy counts are derived from the character count those rows recorded, using the threshold that applied when they were written.
+- `VG.db.close()`, so a caller that needs to delete or upgrade the database can release the connection first.
+
+### Fixed
+
+- Three sentences in the report narrative read as comma splices after the punctuation cleanup.
 
 ## [0.1.0] - 2026-09-05
 

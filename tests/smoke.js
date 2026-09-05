@@ -379,6 +379,55 @@ console.log('\nlow volume behaviour');
     rFew.firstExperience.verdict.indexOf('does not come back') !== -1, rFew.firstExperience.verdict);
 }
 
+/* ---------------------------- migration ------------------------------- */
+console.log('\nevent row migration');
+{
+  // A row exactly as the first release wrote it.
+  const v1 = {
+    id: 1, ts: Date.now(), day: VG.localDay(Date.now()), site: 'claude',
+    host: 'claude.ai', model: '', conversationHash: 'abc', turn: 1,
+    promptChars: 120, promptWords: 22, promptText: 'redacted text',
+    workType: 'coding', workTypeLabel: 'Software engineering',
+    workTypeConfidence: 0.6, workTypeRunnerUp: '', redactionHits: {}, redactionCount: 0,
+    attachments: 0, firstTokenMs: 900, responseMs: 8000, responseChars: 800,
+    responseHasCode: true, regenerated: 0, copiedOut: 450, schemaVersion: 1
+  };
+  const m = VG.migrateEvent(v1);
+
+  check('row is stamped at the current schema', m.schemaVersion === VG.EVENT_SCHEMA_VERSION,
+    String(m.schemaVersion));
+  check('surface fields filled', m.surface === 'chat' && Array.isArray(m.surfaceFlags), m.surface);
+  check('agent fields filled', m.agentKey === '' && m.shared === false, '');
+  check('classifier provenance filled', m.workTypeSource === 'direct' && m.workTypeSecondary === '', '');
+  check('non work derived from the category', m.nonWork === false, String(m.nonWork));
+  check('account tier defaults to unknown', m.accountTier === 'unknown', m.accountTier);
+  // 450 characters copied: one copy, and substantial by the old threshold.
+  check('copy event inferred from the old character count', m.copyEvents === 1, String(m.copyEvents));
+  check('substantial copy inferred from the old threshold', m.copyLarge === 1, String(m.copyLarge));
+  check('original fields untouched', m.promptText === 'redacted text' && m.copiedOut === 450, '');
+
+  const small = VG.migrateEvent(Object.assign({}, v1, { copiedOut: 30 }));
+  check('a small old copy is not counted as substantial',
+    small.copyEvents === 1 && small.copyLarge === 0, String(small.copyLarge));
+  const none = VG.migrateEvent(Object.assign({}, v1, { copiedOut: 0 }));
+  check('no old copy means no copy event', none.copyEvents === 0 && none.copyLarge === 0, '');
+
+  check('migration is idempotent',
+    JSON.stringify(VG.migrateEvent(m)) === JSON.stringify(m), '');
+  const current = VG.newEvent();
+  check('a current row is returned untouched', VG.migrateEvent(current) === current, '');
+  check('a nonsense value does not throw',
+    VG.migrateEvent(null) === null && VG.migrateEvent(7) === 7, '');
+
+  // The whole point: a migrated row must survive the report pipeline.
+  const period = { id: 'm', label: 'Migration', from: v1.ts - 86400000, to: v1.ts + 86400000, prevFrom: null };
+  const rep = VG.buildReport([m], [], period, VG.DEFAULT_SETTINGS, [m], null);
+  check('a migrated row reports as one substantial copy',
+    rep.usability.substantialCopies === 1 && rep.value.eligibleMoments === 1,
+    String(rep.usability.substantialCopies));
+  check('database version was bumped alongside the schema', VG.DB_VERSION === 2, String(VG.DB_VERSION));
+}
+
 /* ------------------------------ upload -------------------------------- */
 console.log('\nscheduled upload');
 {
