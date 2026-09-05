@@ -1,0 +1,528 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Vantage managed configuration",
+  "description": "Any key set here overrides the user's choice and is greyed out in Settings. Deploy via Edge/Chrome 3rd-party extension policy (ExtensionSettings or ExtensionInstallForcelist + 3rdparty/extensions/<id>/policy).",
+  "type": "object",
+  "properties": {
+    "enabled": {
+      "title": "Capture enabled",
+      "type": "boolean"
+    },
+    "captureLevel": {
+      "title": "What is stored per prompt",
+      "type": "string",
+      "enum": [
+        "metadata",
+        "redacted",
+        "full"
+      ]
+    },
+    "domScope": {
+      "title": "How much of the page the content script may read",
+      "description": "minimal (default): the composer only. Response timing comes from mutation events, copy-out from the copy event, account tier from the plan badge. standard: additionally reads response text, the selection, and the account-menu address. Pin this to minimal unless you have a specific reason.",
+      "type": "string",
+      "enum": [
+        "minimal",
+        "standard"
+      ]
+    },
+    "allowFullText": {
+      "title": "Permit the 'full' capture level to be selected",
+      "type": "boolean"
+    },
+    "retentionDays": {
+      "title": "Days of history retained on the device",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 3650
+    },
+    "showCaptureToast": {
+      "title": "Show the on-page capture confirmation",
+      "description": "Recommended true. Staff should be able to see that a prompt was logged.",
+      "type": "boolean"
+    },
+    "disabledSites": {
+      "title": "Adapter ids that must not be captured",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "customAdapters": {
+      "title": "Additional AI sites to track",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "colour": {
+            "type": "string"
+          },
+          "hosts": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "selectors": {
+            "type": "object",
+            "properties": {
+              "composer": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "send": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "thread": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "userTurn": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "assistantTurn": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "model": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "regenerate": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "attachment": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "revision": {
+            "type": "integer"
+          },
+          "sharedDom": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "surfaces": {
+            "title": "Which part of the platform a prompt went to",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string"
+                },
+                "primary": {
+                  "type": "boolean"
+                },
+                "url": {
+                  "type": "string",
+                  "description": "Regex tested against pathname+search"
+                },
+                "idFrom": {
+                  "type": "string",
+                  "description": "e.g. url:1 \u2014 the capture group holding the agent id"
+                },
+                "dom": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "notDom": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "name": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "agentType": {
+                  "type": "string",
+                  "enum": [
+                    "gpt",
+                    "gem",
+                    "project",
+                    "agent",
+                    "notebook"
+                  ]
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "hosts"
+        ]
+      }
+    },
+    "customRedactors": {
+      "title": "Organisation-specific redaction patterns",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "pattern": {
+            "type": "string"
+          },
+          "flags": {
+            "type": "string"
+          },
+          "replacement": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "pattern"
+        ]
+      }
+    },
+    "redactorsOff": {
+      "title": "Built-in redactors to disable",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "redactorsOn": {
+      "title": "Opt-in redactors to enable",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "sensitiveWordlist": {
+      "title": "Terms always masked (project names, codenames)",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "extraTaxonomyTerms": {
+      "title": "Extra keyword weights per work category",
+      "description": "Object keyed by category id. Chrome's policy schema cannot express mixed-type tuples, so terms are objects: [{\"term\": \"board paper\", \"weight\": 6}].",
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "term": {
+              "type": "string"
+            },
+            "weight": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "term"
+          ]
+        }
+      }
+    },
+    "reportEmailTo": {
+      "title": "Default recipient for the Email report button",
+      "type": "string"
+    },
+    "weekStartsOn": {
+      "title": "First day of the reporting week (0 Sunday, 1 Monday)",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 6
+    },
+    "policyAdapters": {
+      "title": "Site configuration pushed from central",
+      "description": "Same shape as customAdapters. These win over anything the user added and are locked in the UI. This is the channel your existing enterprise update tooling should write to.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "colour": {
+            "type": "string"
+          },
+          "hosts": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "selectors": {
+            "type": "object",
+            "properties": {
+              "composer": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "send": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "thread": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "userTurn": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "assistantTurn": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "model": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "regenerate": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "attachment": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "revision": {
+            "type": "integer"
+          },
+          "sharedDom": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "surfaces": {
+            "title": "Which part of the platform a prompt went to",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string"
+                },
+                "primary": {
+                  "type": "boolean"
+                },
+                "url": {
+                  "type": "string",
+                  "description": "Regex tested against pathname+search"
+                },
+                "idFrom": {
+                  "type": "string",
+                  "description": "e.g. url:1 \u2014 the capture group holding the agent id"
+                },
+                "dom": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "notDom": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "name": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "agentType": {
+                  "type": "string",
+                  "enum": [
+                    "gpt",
+                    "gem",
+                    "project",
+                    "agent",
+                    "notebook"
+                  ]
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "hosts"
+        ]
+      }
+    },
+    "siteConfigVersion": {
+      "title": "Stamp for the pushed site config, shown in Settings",
+      "type": "string"
+    },
+    "valueSurveyEnabled": {
+      "title": "Ask the point-of-use time-saved question",
+      "description": "The only field that can support a time-saved claim. User-facing: needs sign-off before enabling.",
+      "type": "boolean"
+    },
+    "valueSurveySamplePercent": {
+      "title": "Percent of eligible moments that ask",
+      "description": "Integer 1-100. Chrome's policy schema does not accept fractional number properties.",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    },
+    "valueSurveyCooldownMin": {
+      "title": "Minimum minutes between asks",
+      "type": "integer",
+      "minimum": 15,
+      "maximum": 10080
+    },
+    "orgUnit": {
+      "title": "Business unit name stamped on every report",
+      "type": "string"
+    },
+    "orgDivision": {
+      "title": "Division / department, if your push can target groups",
+      "type": "string"
+    },
+    "orgCohort": {
+      "title": "Rollout wave or comparison-group label",
+      "type": "string"
+    },
+    "orgDomainMap": {
+      "title": "Email domain to business unit name",
+      "description": "One map pushed to every business unit. Each device resolves its own business unit from the signed-in profile domain, so a single uniform push still produces per-business unit reporting.",
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "corporateDomains": {
+      "title": "Domains counted as corporate accounts",
+      "description": "Used to tell an enterprise AI account from a personal one. Defaults to the keys of orgDomainMap.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "deriveIdentity": {
+      "title": "Allow deriving business unit from the signed-in profile domain",
+      "description": "Requires the optional identity.email permission. Only the domain and a salted hash are kept; the address is discarded.",
+      "type": "boolean"
+    },
+    "reportSigningKey": {
+      "title": "Key used to mark exported reports",
+      "description": "Push one key org-wide so a single verifier can check reports from every device. Anyone holding it can verify a report \u2014 and can also produce one that passes \u2014 so treat it as a secret. Without it each device signs with its own generated key.",
+      "type": "string"
+    },
+    "uploadEnabled": {
+      "title": "Send finished reports to an internal endpoint",
+      "description": "Off by default. This and every other upload key can ONLY be set here \u2014 the extension refuses to change them from its own UI, so a user cannot enable or redirect uploads.",
+      "type": "boolean"
+    },
+    "uploadUrl": {
+      "title": "HTTPS endpoint that receives the POST",
+      "description": "A collector, blob store or API gateway. The extension also needs host permission for this origin: either add it to host_permissions in an internally packaged build, or grant it via the ExtensionSettings policy's runtime_allowed_hosts.",
+      "type": "string"
+    },
+    "uploadAuthHeader": {
+      "title": "Value sent verbatim as the Authorization header",
+      "type": "string"
+    },
+    "uploadCadence": {
+      "title": "How often a completed period is sent",
+      "type": "string",
+      "enum": [
+        "daily",
+        "weekly",
+        "monthly"
+      ]
+    },
+    "uploadContent": {
+      "title": "What each upload contains",
+      "description": "summary: the written narrative and headline numbers. aggregate (default): the full report object \u2014 counts and rates, no prompt text. events: every captured event row.",
+      "type": "string",
+      "enum": [
+        "summary",
+        "aggregate",
+        "events"
+      ]
+    },
+    "uploadIncludePromptText": {
+      "title": "Include redacted prompt text in event uploads",
+      "description": "Only has an effect when uploadContent is 'events'. Redacted text still leaves the device. Requires a privacy assessment before enabling.",
+      "type": "boolean"
+    }
+  }
+}
