@@ -10,7 +10,7 @@ const path = require('path');
 const vm = require('vm');
 
 const ROOT = path.join(__dirname, '..');
-['schema', 'redact', 'classify', 'adapters', 'surfaces', 'report', 'sign', 'upload'].forEach((f) => {
+['schema', 'redact', 'classify', 'adapters', 'surfaces', 'netrules', 'report', 'sign', 'upload'].forEach((f) => {
   vm.runInThisContext(fs.readFileSync(path.join(ROOT, 'src', 'core', f + '.js'), 'utf8'), { filename: f + '.js' });
 });
 const VG = globalThis.VG;
@@ -182,6 +182,52 @@ console.log('\ndom scope');
     rep.value.eligibleMoments === 1, String(rep.value.eligibleMoments));
   check('substantial copies surfaced as their own metric',
     rep.usability.substantialCopies === 1, String(rep.usability.substantialCopies));
+}
+
+/* --------------------------- network capture -------------------------- */
+console.log('\nnetwork request extraction');
+{
+  const chatgpt = VG.BUILTIN_ADAPTERS.find((a) => a.id === 'chatgpt');
+  const claude = VG.BUILTIN_ADAPTERS.find((a) => a.id === 'claude');
+  const gemini = VG.BUILTIN_ADAPTERS.find((a) => a.id === 'gemini');
+
+  const cg = VG.readRequest(chatgpt.net, 'https://chatgpt.com/backend-api/conversation', 'POST',
+    JSON.stringify({ action: 'next', conversation_id: '7f3a-9b1c',
+      messages: [{ author: { role: 'user' }, content: { content_type: 'text', parts: ['Refactor this handler'] } }] }));
+  check('chatgpt prompt extracted', cg && cg.prompt === 'Refactor this handler', JSON.stringify(cg));
+  check('chatgpt conversation id extracted', cg && cg.conversationId === '7f3a-9b1c', '');
+
+  const cl = VG.readRequest(claude.net, 'https://claude.ai/api/organizations/x/chat_conversations/y/completion', 'POST',
+    JSON.stringify({ prompt: 'Summarise the attached note', conversation_uuid: 'abc-123' }));
+  check('claude prompt extracted', cl && cl.prompt === 'Summarise the attached note', JSON.stringify(cl));
+
+  check('gemini has no rule, so it stays on the page path', gemini.net.length === 0, '');
+
+  // Requests that are not prompts must be ignored.
+  check('same endpoint without a prompt is ignored',
+    VG.readRequest(chatgpt.net, 'https://chatgpt.com/backend-api/conversation', 'POST', '{"action":"variant"}') === null, '');
+  check('a different endpoint is ignored',
+    VG.readRequest(chatgpt.net, 'https://chatgpt.com/backend-api/settings', 'POST', '{"a":1}') === null, '');
+  check('a GET is ignored',
+    VG.readRequest(chatgpt.net, 'https://chatgpt.com/backend-api/conversation', 'GET', '{"messages":[]}') === null, '');
+  check('a non JSON body is ignored',
+    VG.readRequest(chatgpt.net, 'https://chatgpt.com/backend-api/conversation', 'POST', 'not json') === null, '');
+  check('an empty rule set matches nothing',
+    VG.readRequest([], 'https://chatgpt.com/backend-api/conversation', 'POST', '{}') === null, '');
+
+  // Multi part messages join rather than losing everything after the first.
+  const multi = VG.readRequest(chatgpt.net, 'https://chatgpt.com/backend-api/conversation', 'POST',
+    JSON.stringify({ messages: [{ content: { parts: ['first line', 'second line'] } }] }));
+  check('multi part content is joined', multi.prompt === 'first line\nsecond line', JSON.stringify(multi));
+
+  // A wildcard must walk arrays and objects without throwing on odd shapes.
+  const odd = VG.readRequest(chatgpt.net, 'https://chatgpt.com/backend-api/conversation', 'POST',
+    JSON.stringify({ messages: [{ content: { parts: [null, 12, { nested: 'x' }, 'real text'] } }] }));
+  check('non string parts are skipped', odd && odd.prompt === 'real text', JSON.stringify(odd));
+
+  check('rules survive the policy normaliser',
+    (VG.normaliseCustomAdapter({ id: 'x', label: 'X', hosts: ['x.test'],
+      net: [{ id: 'r', url: '/api', paths: ['p'] }] }).net || []).length === 1, '');
 }
 
 /* ------------------------------ surfaces ------------------------------ */

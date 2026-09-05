@@ -107,9 +107,13 @@ const PROMPTS = [
   }
 
   // Serve the fixture at the real hostname so the adapter matches on host.
-  await context.route('https://chatgpt.com/**', (route) =>
-    route.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body: FIXTURE })
-  );
+  await context.route('https://chatgpt.com/**', (route) => {
+    const url = route.request().url();
+    if (url.indexOf('/backend-api/') !== -1) {
+      return route.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true}' });
+    }
+    return route.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body: FIXTURE });
+  });
 
   const page = await context.newPage();
   const pageErrors = [];
@@ -185,6 +189,12 @@ const PROMPTS = [
 
     const coding = events[0];
     check('turn 1 classified as coding', coding.workType === 'coding', coding.workType);
+    // The whole point of the network path: the prompt came from the request
+    // the site sent, not from reading the rendered page.
+    check('captured from the network, not the page',
+      coding.captureSource === 'network', coding.captureSource);
+    check('conversation id taken from the request body',
+      !!coding.conversationHash, coding.conversationHash);
     check('turn 1 marked direct', coding.workTypeSource === 'direct', coding.workTypeSource);
     check('surface detected as custom GPT', coding.surface === 'custom_agent', coding.surface);
     check('agent key hashed and stored', !!coding.agentKey && coding.agentKey.length === 16, coding.agentKey);

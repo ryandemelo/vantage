@@ -80,6 +80,15 @@
           dom: ['button[aria-pressed="true"][aria-label*="Research" i]', '[data-testid*="research-toggle" i][aria-pressed="true"]']
         }
       ],
+      // Read the request the site sends rather than the page it renders.
+      // Markup moves constantly, this does not.
+      net: [
+        {
+          id: 'completion', url: '\\/(?:append_message|completion)(?:\\?|$)', method: 'POST',
+          paths: ['prompt', 'messages.*.content.*.text', 'messages.*.content'],
+          idPath: 'conversation_uuid'
+        }
+      ],
       sharedDom: ['[data-testid="project-members"]', '[aria-label*="Shared with" i]'],
       account: {
         emailFrom: ['[data-testid="user-menu-email"]', 'div[class*="account" i] [class*="email" i]'],
@@ -160,6 +169,13 @@
           dom: ['button[aria-label*="Search" i][aria-pressed="true"]', '[data-testid*="search-toggle" i][aria-pressed="true"]']
         }
       ],
+      net: [
+        {
+          id: 'conversation', url: '\\/backend-(?:api|alt)\\/f?conversation', method: 'POST',
+          paths: ['messages.*.content.parts.*', 'messages.*.content.text'],
+          idPath: 'conversation_id'
+        }
+      ],
       sharedDom: ['[data-testid="project-members"]', '[aria-label*="Shared" i][role="group"]'],
       account: {
         emailFrom: ['[data-testid="accounts-profile-button"] [class*="email" i]', 'div[class*="account-menu" i] [class*="email" i]'],
@@ -209,6 +225,9 @@
           dom: ['immersive-panel', '[data-test-id="canvas-panel"]']
         }
       ],
+      // Gemini posts through a batched, encoded transport rather than plain
+      // JSON, so there is no stable field to read. It stays on the page path.
+      net: [],
       sharedDom: ['[data-test-id*="shared" i]'],
       account: {
         emailFrom: ['a[aria-label*="Google Account" i]', 'div[class*="gb_" i][aria-label*="@"]'],
@@ -329,6 +348,7 @@
         attachment: merge('attachment')
       },
       surfaces: Array.isArray(c.surfaces) ? c.surfaces : [],
+      net: Array.isArray(c.net) ? c.net : [],
       sharedDom: Array.isArray(c.sharedDom) ? c.sharedDom : [],
       account: c.account || {},
       conversationId: (url) => url.pathname

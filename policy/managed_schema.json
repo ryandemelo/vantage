@@ -187,6 +187,39 @@
                 "id"
               ]
             }
+          },
+          "net": {
+            "title": "Requests that carry a prompt",
+            "description": "Read the prompt from the request the site sends rather than from the rendered page. Markup changes constantly, a site's own API contract does not. Each rule gives a url regex, an optional method, one or more dotted paths to the prompt text where * walks arrays and objects, and an optional path to a conversation id.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "url": {
+                  "type": "string"
+                },
+                "method": {
+                  "type": "string"
+                },
+                "paths": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "idPath": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "url",
+                "paths"
+              ]
+            }
           }
         },
         "required": [
@@ -415,6 +448,39 @@
               },
               "required": [
                 "id"
+              ]
+            }
+          },
+          "net": {
+            "title": "Requests that carry a prompt",
+            "description": "Read the prompt from the request the site sends rather than from the rendered page. Markup changes constantly, a site's own API contract does not. Each rule gives a url regex, an optional method, one or more dotted paths to the prompt text where * walks arrays and objects, and an optional path to a conversation id.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "url": {
+                  "type": "string"
+                },
+                "method": {
+                  "type": "string"
+                },
+                "paths": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "idPath": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "url",
+                "paths"
               ]
             }
           }

@@ -53,9 +53,30 @@
         "src/core/classify.js",
         "src/core/adapters.js",
         "src/core/surfaces.js",
+        "src/core/netrules.js",
         "src/content/capture.js"
       ],
       "run_at": "document_idle",
+      "all_frames": false
+    },
+    {
+      "matches": [
+        "https://claude.ai/*",
+        "https://*.claude.ai/*",
+        "https://chatgpt.com/*",
+        "https://*.chatgpt.com/*",
+        "https://chat.openai.com/*",
+        "https://gemini.google.com/*",
+        "https://copilot.microsoft.com/*",
+        "https://copilot.cloud.microsoft/*",
+        "https://m365.cloud.microsoft/*",
+        "https://www.office.com/*"
+      ],
+      "js": [
+        "src/content/net-hook.js"
+      ],
+      "run_at": "document_start",
+      "world": "MAIN",
       "all_frames": false
     }
   ],

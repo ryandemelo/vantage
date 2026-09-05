@@ -32,6 +32,14 @@
   // falling into Uncategorised.
   let threadContext = null;
   let watcher = null;
+  // Conversation id taken from the request body, which is more reliable than
+  // parsing it out of the URL.
+  let netConversationId = '';
+  // The page path fires on Enter, before the site has sent its request. When a
+  // network rule exists for this site the page path waits briefly so the more
+  // reliable path can claim the prompt first.
+  let pendingDom = null;
+  const DOM_DEFER_MS = 600;
 
   function send(msg) {
     return new Promise((resolve) => {
@@ -141,13 +149,46 @@
   function userTurnCount() { return VG.pickAll(adapter.selectors.userTurn, threadRoot()).length; }
 
   function conversationKey() {
+    if (netConversationId) return netConversationId;
     try { return adapter.conversationId(new URL(location.href)); }
     catch (e) { return location.pathname; }
   }
 
+  /* ---------------------------- network path ---------------------------- *
+   * The prompt is read from the request the site sends rather than from the
+   * page it renders. Markup changes constantly, a site's own API contract does
+   * not, so this is the primary path and the page is the fallback.
+   * --------------------------------------------------------------------- */
+  function onNetMessage(e) {
+    if (e.source !== window || !e.data || e.data.channel !== 'vantage:net') return;
+    if (e.data.type !== 'request') return;
+    if (!adapter || !(adapter.selectors && adapter.net && adapter.net.length)) return;
+
+    let found = null;
+    try {
+      found = VG.readRequest(adapter.net, e.data.url, e.data.method, e.data.body);
+    } catch (err) {
+      found = null;
+    }
+    // The body is not retained. Only the extracted prompt continues.
+    if (!found || !found.prompt) return;
+
+    netConversationId = found.conversationId || netConversationId;
+    if (pendingDom) { clearTimeout(pendingDom.timer); pendingDom = null; }
+    snapshot(found.prompt, 'network');
+  }
+
+  /* Hold a page capture briefly, in case the network path is about to see the
+   * same prompt. Without a network rule for this site it commits immediately. */
+  function deferDom(raw) {
+    if (!adapter || !(adapter.net && adapter.net.length)) { snapshot(raw, 'dom'); return; }
+    if (pendingDom) clearTimeout(pendingDom.timer);
+    pendingDom = { raw, timer: setTimeout(() => { pendingDom = null; snapshot(raw, 'dom'); }, DOM_DEFER_MS) };
+  }
+
   /* ------------------------------ event ------------------------------ */
 
-  async function buildEvent(rawText) {
+  async function buildEvent(rawText, source) {
     const level = settings.captureLevel;
     const red = VG.redact(rawText, settings);
     const raw = VG.classify(red.text, settings);
@@ -184,6 +225,7 @@
     ev.workTypeRunnerUp = cls.runnerUp;
     ev.workTypeSecondary = cls.secondary || '';
     ev.workTypeSource = cls.source || 'direct';
+    ev.captureSource = source;
     ev.nonWork = !!cls.nonWork;
     ev.accountTier = VG.detectAccount(adapter, document, settings);
     ev.redactionHits = red.hits;
@@ -282,7 +324,7 @@
    * `raw` is read by the caller SYNCHRONOUSLY, before the site clears the
    * composer. Everything after that point may await.
    */
-  async function snapshot(raw) {
+  async function snapshot(raw, source) {
     await ensureSettings();
     // Re-check after settings land: the site may be disabled by policy, or
     // covered by a pushed adapter rather than the built-in one.
@@ -303,7 +345,7 @@
     const domTurns = userTurnCount();
     turnCounter = domTurns > 0 ? domTurns + 1 : turnCounter + 1;
 
-    const { ev, redactionCount } = await buildEvent(raw);
+    const { ev, redactionCount } = await buildEvent(raw, source || 'dom');
     const res = await send({ type: 'EVENT', event: ev });
     lastEventId = res && res.id ? res.id : null;
     lastEventMeta = { workTypeLabel: ev.workTypeLabel, surfaceLabel: ev.surfaceLabel };
@@ -454,7 +496,7 @@
       : genericComposer(e.target);
     if (!el) return;
     const raw = readComposer(el).trim();
-    if (raw) snapshot(raw);
+    if (raw) deferDom(raw);
   }
 
   function onClick(e) {
@@ -466,7 +508,7 @@
     const btn = VG.closestAny(e.target, sendSel);
     if (!btn) return;
     const raw = readComposer(composerNear(btn)).trim();
-    if (raw) snapshot(raw);
+    if (raw) deferDom(raw);
   }
 
   /*
@@ -593,6 +635,12 @@
     attach();
 
     resolveSync();
+
+    // Tell the page context hook the extension is listening. Anything it held
+    // during startup is replayed now.
+    window.addEventListener('message', onNetMessage, false);
+    window.postMessage({ channel: 'vantage:net', type: 'ready' }, location.origin);
+
     mark('armed');
     loadSettings();
 
