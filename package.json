@@ -1,6 +1,6 @@
 {
   "name": "vantage",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Browser extension that measures AI chat tool usage on device, classifies the work, redacts sensitive values and produces weekly and monthly reports",
   "license": "MIT",
   "author": "Ryan de Melo",
