@@ -1,5 +1,5 @@
 /*
- * Vantage — service-worker.js
+ * Vantage, service-worker.js
  * Message router, retention enforcement, badge counter.
  * Classic (non-module) worker so the same core files load here and in pages.
  */
@@ -48,7 +48,7 @@ async function enforceRetention() {
 
 /* ----------------------------- upload ------------------------------ *
  * Runs from an alarm in the service worker, so it does not depend on an AI
- * site — or any tab at all — being open. The alarm fires hourly and almost
+ * site, or any tab at all, being open. The alarm fires hourly and almost
  * always no-ops; the work only happens when a completed period has not been
  * sent yet and the backoff allows an attempt.
  * ------------------------------------------------------------------- */

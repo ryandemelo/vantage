@@ -1,5 +1,5 @@
 /*
- * Vantage — adapters.js
+ * Vantage, adapters.js
  * One entry per AI site: where the composer is, where the thread is, and which
  * *surface* of the platform a prompt was sent to (plain chat, Project, custom
  * GPT / Gem / agent, Canvas, Deep Research…).
@@ -7,9 +7,9 @@
  * Everything here is declarative strings, so an identical object can arrive
  * from central policy as JSON. Three config sources, in precedence order:
  *
- *   1. policy   — pushed by the org (chrome.storage.managed). Wins, locked in UI.
- *   2. user     — added on the Options page. Cannot override a policy entry.
- *   3. builtin  — shipped in this file, refreshed by a store update.
+ *   1. policy  , pushed by the org (chrome.storage.managed). Wins, locked in UI.
+ *   2. user    , added on the Options page. Cannot override a policy entry.
+ *   3. builtin , shipped in this file, refreshed by a store update.
  *
  * Bump `configRevision` whenever the built-in set changes so stale user
  * overrides of a built-in id can be detected and flagged.

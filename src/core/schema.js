@@ -1,5 +1,5 @@
 /*
- * Vantage — schema.js
+ * Vantage, schema.js
  * Shared constants: work-type taxonomy, default settings, event shape.
  * Loaded as a classic script in content scripts, the service worker and UI pages.
  * Everything hangs off globalThis.VG so no bundler is required.
@@ -295,10 +295,10 @@
     captureLevel: VG.CAPTURE_LEVELS.REDACTED,
 
     /* How much of the page the content script is allowed to read.
-       minimal  — the composer only. Response timing comes from mutation
+       minimal , the composer only. Response timing comes from mutation
                   events, copy-out from the copy event alone, account tier
                   from the plan badge. Nothing else is read into memory.
-       standard — additionally reads response text (for length and code
+       standard, additionally reads response text (for length and code
                   detection), the selection (for copied character count) and
                   the account-menu address (domain only). Opt in deliberately. */
     domScope: 'minimal',
@@ -318,7 +318,7 @@
     firstRunDone: false,
 
     /* Organisation attribution. All of this is pushed, or derived locally
-       from the signed-in profile domain — never typed by the user. */
+       from the signed-in profile domain, never typed by the user. */
     orgAgency: '',                       // e.g. "Ministry of Manpower"
     orgDivision: '',                     // optional, only if policy can target groups
     orgCohort: '',                       // rollout wave / comparison group label
@@ -393,11 +393,11 @@
     'surface',           // chat | project | custom_agent | ... which part of the platform
     'surfaceLabel',
     'surfaceFlags',      // secondary surfaces active at the same time (canvas, search…)
-    'agentKey',          // sha256 of the GPT/Gem/Project id — stable, not reversible
+    'agentKey',          // sha256 of the GPT/Gem/Project id, stable, not reversible
     'agentName',         // display name, redacted through the org wordlist
     'agentType',         // gpt | gem | project | agent
     'shared',            // true when the agent/project is shared with a team
-    'conversationHash',  // sha256(conversationId) truncated — never the raw id
+    'conversationHash',  // sha256(conversationId) truncated, never the raw id
     'turn',              // 1-based turn index within the conversation
     'promptChars',
     'promptWords',
@@ -409,7 +409,7 @@
     'workTypeSecondary',  // second intent when a prompt clearly does two things
     'workTypeSource',     // direct | inherited (short follow-up turns borrow the thread's topic)
     'nonWork',            // true when the category is flagged as non-work
-    'accountTier',        // enterprise | team | free | unknown — read from the site's own plan badge
+    'accountTier',        // enterprise | team | free | unknown, read from the site's own plan badge
     'redactionHits',     // { detectorId: count }
     'redactionCount',
     'attachments',       // count of files attached at submit time
@@ -420,7 +420,7 @@
     'regenerated',       // times user hit regenerate on this turn
     'copyEvents',        // times output was copied out after this turn
     'copyLarge',         // of those, how many looked substantial (geometry, not text)
-    'copiedOut',         // chars copied — 0 unless domScope is 'standard'
+    'copiedOut',         // chars copied, 0 unless domScope is 'standard'
     'savedMinutes',      // self-reported, from the point-of-value prompt: 0|15|60|120
     'qualityRating',     // self-reported: -1 worse, 0 same, 1 better than doing it alone
     'schemaVersion'
@@ -471,7 +471,7 @@
   };
 
   /* ------------------------------------------------------------------ *
-   * Small date helpers shared everywhere. All local time — reports are
+   * Small date helpers shared everywhere. All local time, reports are
    * read by humans in their own timezone.
    * ------------------------------------------------------------------ */
   VG.localDay = function (ts) {
