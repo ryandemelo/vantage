@@ -386,6 +386,103 @@ const PROMPTS = [
   check('the sent period is recorded so it is not sent twice',
     !!second.sent && second.sent.length > 0, JSON.stringify(second));
 
+  /* --- database upgrade from a version 1 store, in a real browser --- */
+  console.log('\ndatabase migration');
+
+  // Every other page holding the database open has to go first, otherwise
+  // deleteDatabase blocks on their connections and the run hangs.
+  await ext.close();
+  for (const pg of context.pages()) {
+    if (pg.url().startsWith('chrome-extension://')) await pg.close().catch(() => {});
+  }
+  // The service worker holds a connection of its own and outlives the pages.
+  const released = await worker.evaluate(async () => await VG.db.close());
+  check('service worker released its database connection', released === true, String(released));
+
+  // Seed from the service worker. Any page that loads db.js reopens the
+  // database as its own startup finishes, which blocks the delete.
+  const seeded = await worker.evaluate(async () => {
+    await VG.db.close();
+    await new Promise((resolve, reject) => {
+      const del = indexedDB.deleteDatabase('vantage');
+      const timer = setTimeout(() => reject(new Error('deleteDatabase blocked')), 8000);
+      del.onsuccess = () => { clearTimeout(timer); resolve(); };
+      del.onerror = () => { clearTimeout(timer); reject(del.error); };
+    });
+    await new Promise((resolve, reject) => {
+      const req = indexedDB.open('vantage', 1);           // the original version
+      const guard = setTimeout(() => reject(new Error('open at version 1 blocked')), 8000);
+      req.onupgradeneeded = (e) => {
+        const store = e.target.result.createObjectStore('events', { keyPath: 'id', autoIncrement: true });
+        store.createIndex('ts', 'ts');
+        store.createIndex('day', 'day');
+        store.createIndex('site', 'site');
+        store.createIndex('workType', 'workType');
+        store.createIndex('conversationHash', 'conversationHash');
+      };
+      req.onsuccess = () => {
+        clearTimeout(guard);
+        const db = req.result;
+        const tx = db.transaction('events', 'readwrite');
+        tx.objectStore('events').add({
+          ts: Date.now(), day: new Date().toISOString().slice(0, 10),
+          site: 'claude', host: 'claude.ai', conversationHash: 'legacy', turn: 1,
+          promptChars: 120, promptWords: 22, promptText: 'a legacy row',
+          workType: 'coding', workTypeLabel: 'Software engineering',
+          workTypeConfidence: 0.6, redactionHits: {}, redactionCount: 0,
+          copiedOut: 450, regenerated: 0, schemaVersion: 1
+        });
+        tx.oncomplete = () => { db.close(); resolve(); };
+        tx.onerror = () => reject(tx.error);
+      };
+      req.onerror = () => { clearTimeout(guard); reject(req.error); };
+    });
+    return true;
+  });
+
+  check('legacy version 1 database seeded', seeded === true, String(seeded));
+
+  const reader = await context.newPage();
+  await reader.goto(`chrome-extension://${extId}/src/ui/reports.html`);
+  await reader.waitForTimeout(900);
+  const migrated = await reader.evaluate(async () => {
+    const rows = await window.VG.db.all();
+    const v = await new Promise((resolve) => {
+      const r = indexedDB.open('vantage');
+      r.onsuccess = () => { const n = r.result.version; r.result.close(); resolve(n); };
+    });
+    return { dbVersion: v, row: rows[0] || null, count: rows.length };
+  });
+
+  check('database opened at the new version', migrated.dbVersion === 2, String(migrated.dbVersion));
+  check('the legacy row survived the upgrade', migrated.count === 1, String(migrated.count));
+  if (migrated.row) {
+    check('row was rewritten at the current schema',
+      migrated.row.schemaVersion === 4, String(migrated.row.schemaVersion));
+    check('fields added since version 1 are present',
+      migrated.row.surface === 'chat' && migrated.row.accountTier === 'unknown' &&
+      migrated.row.workTypeSource === 'direct', JSON.stringify({
+        s: migrated.row.surface, a: migrated.row.accountTier, w: migrated.row.workTypeSource }));
+    check('copy counts derived from the old character field',
+      migrated.row.copyEvents === 1 && migrated.row.copyLarge === 1,
+      `${migrated.row.copyEvents}/${migrated.row.copyLarge}`);
+    check('original content untouched by the upgrade',
+      migrated.row.promptText === 'a legacy row' && migrated.row.copiedOut === 450, '');
+  }
+
+  // A report over migrated data must not crash or misreport.
+  const migratedReport = await reader.evaluate(async () => {
+    const VG = window.VG;
+    const rows = await VG.db.all();
+    const p = { id: 'mig', label: 'Migrated', from: 0, to: Date.now() + 1000, prevFrom: null };
+    const r = VG.buildReport(rows, [], p, VG.DEFAULT_SETTINGS, rows, null);
+    return { prompts: r.totals.prompts, substantial: r.usability.substantialCopies };
+  });
+  check('a report over migrated rows is correct',
+    migratedReport.prompts === 1 && migratedReport.substantial === 1,
+    JSON.stringify(migratedReport));
+  await reader.close();
+
   await context.close();
 
   console.log('\n--- narrative from real captured data ---\n' + report.summary + '\n');

@@ -10,7 +10,7 @@
 
   VG.VERSION = '0.1.0';
   VG.DB_NAME = 'vantage';
-  VG.DB_VERSION = 1;
+  VG.DB_VERSION = 2;
 
   /* ------------------------------------------------------------------ *
    * Work-type taxonomy
@@ -468,6 +468,59 @@
       qualityRating: null,
       schemaVersion: 4
     };
+  };
+
+  VG.EVENT_SCHEMA_VERSION = 4;
+
+  /* ------------------------------------------------------------------ *
+   * Row migration.
+   *
+   * Fields were added to the event shape over several releases. Rather than
+   * scattering fallbacks through every consumer, a row is brought up to the
+   * current shape once, when the database opens at a newer version.
+   *
+   * Pure and idempotent, so it can be tested without a browser and applied
+   * twice without harm.
+   * ------------------------------------------------------------------ */
+  VG.migrateEvent = function (row) {
+    if (!row || typeof row !== 'object') return row;
+    const from = row.schemaVersion || 1;
+    if (from >= VG.EVENT_SCHEMA_VERSION) return row;
+
+    const e = Object.assign({}, row);
+
+    // v2 added platform surface and agent identification.
+    if (from < 2) {
+      if (e.surface === undefined) e.surface = 'chat';
+      if (e.surfaceLabel === undefined) e.surfaceLabel = 'Chat';
+      if (!Array.isArray(e.surfaceFlags)) e.surfaceFlags = [];
+      if (e.agentKey === undefined) e.agentKey = '';
+      if (e.agentName === undefined) e.agentName = '';
+      if (e.agentType === undefined) e.agentType = '';
+      if (e.shared === undefined) e.shared = false;
+      if (e.savedMinutes === undefined) e.savedMinutes = null;
+      if (e.qualityRating === undefined) e.qualityRating = null;
+    }
+
+    // v3 added classifier provenance, the non work flag and account tier.
+    if (from < 3) {
+      if (e.workTypeSecondary === undefined) e.workTypeSecondary = '';
+      if (e.workTypeSource === undefined) e.workTypeSource = 'direct';
+      if (e.nonWork === undefined) e.nonWork = VG.isNonWork(e.workType);
+      if (e.accountTier === undefined) e.accountTier = 'unknown';
+    }
+
+    // v4 split copy events from copied characters. A row written before the
+    // split recorded characters only, so a non zero count means one copy
+    // happened, and 200 characters was the threshold for substantial at the
+    // time those rows were written.
+    if (from < 4) {
+      if (e.copyEvents === undefined) e.copyEvents = e.copiedOut > 0 ? 1 : 0;
+      if (e.copyLarge === undefined) e.copyLarge = e.copiedOut >= 200 ? 1 : 0;
+    }
+
+    e.schemaVersion = VG.EVENT_SCHEMA_VERSION;
+    return e;
   };
 
   /* ------------------------------------------------------------------ *
