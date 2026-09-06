@@ -26,6 +26,28 @@ Manifest V3. One build serves both Edge and Chrome.
 - [Testing](#testing)
 - [Contributing](#contributing)
 
+## How the prompt is captured
+
+Two paths. The network path is primary.
+
+**Network.** Every one of these sites POSTs the prompt as JSON to its own API. A small script in the page context notices same origin JSON POSTs and hands them to the extension, which pulls out the prompt using a declarative rule:
+
+```js
+{ id: 'conversation',
+  url: '\\/backend-(?:api|alt)\\/f?conversation',
+  method: 'POST',
+  paths: ['messages.*.content.parts.*'],
+  idPath: 'conversation_id' }
+```
+
+This is the stable path. A site's own API contract changes rarely, because changing it breaks their own clients, and it does not move when someone reskins the interface. Selectors do. Two live probes found stale selectors on two sites.
+
+**Page.** Reads the composer on Enter or send. Used where no network rule exists, currently Gemini, whose transport is a batched encoded format with no stable field to read. It also covers any site added by policy without a rule.
+
+Where both apply the page path waits 600ms so the network path can claim the prompt first, and a hash based check stops the same prompt being counted twice. The stored event records which path saw it, in `captureSource`.
+
+The page context script is deliberately tiny. It decides nothing, extracts nothing, and only forwards same origin JSON POSTs under 512KB. Uploads, streams, form data and cross origin requests never cross. Extraction, redaction and classification all happen on the extension side, in one tested place.
+
 ## What it reads from the page
 
 A content script on an AI site can read anything on that site. That is the central risk in this class of tool, so here is the full inventory of what this one touches. `minimal` is the default scope.
@@ -68,6 +90,7 @@ One record per prompt, written on submit.
 | Field | Notes |
 | --- | --- |
 | Timestamp, site, model label | Model read from the site own switcher, best effort |
+| Capture source | `network` or `dom`, which path saw the prompt |
 | Conversation hash, turn number | The conversation id is hashed, the raw id is never stored |
 | Surface | Plain chat, Project, custom GPT, Gem or agent, plus concurrent Canvas, Deep Research, code interpreter and search flags |
 | Agent key, name, type, shared | The agent id is hashed. The display name passes through your wordlist |
@@ -453,6 +476,7 @@ policy/managed_schema.json enterprise policy keys
 src/core/
   schema.js                taxonomy, defaults, event shape, date helpers
   surfaces.js              platform surface, agent and account detection
+  netrules.js              declarative extraction of the prompt from a request
   redact.js                detectors and redaction engine
   classify.js              on device work type classifier
   adapters.js              per site selector registry
@@ -462,6 +486,7 @@ src/core/
   upload.js                scheduling, catch up and payload gating
   demo.js                  sample data generator
 src/content/capture.js     the only code that touches page content
+src/content/net-hook.js    page context observer, forwards eligible requests
 src/background/service-worker.js  message router, retention, badge, uploader
 src/ui/                    popup, reports, options
 tools/                     build, probes, report verifier

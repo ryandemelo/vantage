@@ -415,6 +415,7 @@
     'workTypeRunnerUp',
     'workTypeSecondary',  // second intent when a prompt clearly does two things
     'workTypeSource',     // direct | inherited (short follow-up turns borrow the thread's topic)
+    'captureSource',      // network | dom, which path saw the prompt
     'nonWork',            // true when the category is flagged as non-work
     'accountTier',        // enterprise | team | free | unknown, read from the site's own plan badge
     'redactionHits',     // { detectorId: count }
@@ -458,6 +459,7 @@
       workTypeRunnerUp: '',
       workTypeSecondary: '',
       workTypeSource: 'direct',
+      captureSource: 'dom',
       nonWork: false,
       accountTier: 'unknown',
       redactionHits: {},
