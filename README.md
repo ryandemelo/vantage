@@ -458,15 +458,18 @@ Produces in `dist/` a zip for the Edge Add-ons or Chrome Web Store, a signed crx
 ## Testing
 
 ```
-node tests/smoke.js         # 146 unit checks, no browser
-node tools/e2e-fixture.js   # 57 end to end checks, real extension in Chromium
+node tests/smoke.js         # unit checks, no browser
+node tools/e2e-fixture.js   # end to end, real extension in Chromium
+node tools/e2e-nethook.js   # the page context hook, in a real browser
 ```
 
 The unit suite covers redaction including false positive guards, the classifier across all categories, classifier disambiguation and thread context inheritance, surface and custom GPT, Gem and Project detection, account tier detection under both DOM scopes, config source precedence, low volume behaviour, report aggregation, the value estimator, report signing and tamper detection, and upload scheduling and payload gating.
 
 The end to end suite loads the real unpacked extension into Chromium, serves a fixture at `https://chatgpt.com/` so the adapter matches on hostname, types prompts the way a person would, then reads what the extension wrote to its own IndexedDB. It covers manifest acceptance, content script attachment, both submit paths, redaction, classification, thread context inheritance, surface and agent detection, response timing, DOM scope enforcement in both modes, report signing, and a scheduled upload firing from the service worker with no AI site open.
 
-Set `HEADED=1` to watch the end to end run in a window.
+`tools/e2e-nethook.js` covers the script that patches `fetch` and `XMLHttpRequest` inside the site's own context. A mistake there does not degrade a metric, it breaks the site for the person using it, so it is tested from both sides: the page must keep working exactly as before, and only the requests that should cross may cross. It checks that fetch still returns real responses, that failures still reject, that `fetch` still reports itself as native, and that cross origin requests, form data, non JSON bodies and oversized bodies never leave the page.
+
+Set `HEADED=1` to watch any end to end run in a window.
 
 ## Layout
 
