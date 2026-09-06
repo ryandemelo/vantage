@@ -8,6 +8,17 @@ All notable changes to this project are recorded here. The format follows
 
 Nothing yet.
 
+## [0.4.0] - 2026-09-06
+
+### Fixed
+
+- Requests built as a `Request` object with no separate init were skipped entirely. Such a request carries its body as a stream rather than a string, so there was nothing for the hook to inspect and the prompt was missed silently. The request is now cloned and the copy read, leaving the original untouched. Only same origin POSTs are cloned.
+
+### Added
+
+- A test suite for the script that patches `fetch` and `XMLHttpRequest` in the site's own context. It checks that the page keeps working, that failures still reject, that `fetch` still reports itself as native, and that cross origin requests, form data, non JSON bodies and oversized bodies never leave the page. This is what found the missed request shape.
+- Deployment policy generation for Windows, macOS and Linux, for both Edge and Chrome, from one validated payload.
+
 ## [0.3.0] - 2026-09-06
 
 ### Added
