@@ -6,7 +6,14 @@ All notable changes to this project are recorded here. The format follows
 
 ## [Unreleased]
 
-Nothing yet.
+### Fixed
+
+- Claude assistant turn selector reordered from a live probe on a signed in conversation. The two that led the list no longer resolve and the third does, so it now leads. Turn counting, response measurement and conversation depth depended on it.
+- ChatGPT model selector reordered for the same reason.
+
+### Added
+
+- The selector probe reports the elements that are actually present when a selector misses, so a fix can be made from one report rather than another round trip to a signed in page.
 
 ## [0.2.0] - 2026-09-05
 
