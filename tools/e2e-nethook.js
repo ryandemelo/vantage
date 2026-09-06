@@ -109,8 +109,16 @@ function check(name, cond, detail) {
   const extId = new URL(sw.url()).host;
   const ext = await context.newPage();
   await ext.goto(`chrome-extension://${extId}/src/ui/reports.html`);
-  await ext.waitForTimeout(700);
-  const stored = await ext.evaluate(async () => await window.VG.db.all());
+
+  // A forwarded request reaches storage only after several async hops: the
+  // isolated world settles settings, hashes the conversation id, messages the
+  // service worker, and the worker writes. Reading once races a slow runner.
+  let stored = [];
+  for (let i = 0; i < 30; i++) {
+    await ext.waitForTimeout(400);
+    stored = await ext.evaluate(async () => await window.VG.db.all());
+    if (stored.length >= 3) break;
+  }
 
   console.log('\nwhat reached storage');
   const storedText = JSON.stringify(stored);
