@@ -3,7 +3,7 @@
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnj6sC3Ew4DylMi0c5O+9fhscomZt9dLHLIzvkp6BX6W9wJahTqL+HNz73dnCovhdpj6b5hh5tTvlS5TM6I4g/P3uotcQnpDZzCv1OUJEqB6wpB+yXosY/YYadjTSQm75rKeI66JCsZcrhQzs/c37iqViujqLy1c9XfVUNUHMx5lDY7ND7exph4VZ9AYannEPCTpwMSOBDf21SvgdVlz9dqPcuaTUOtxEcLCzSqi3UDIIzKuyDMWht8n5wjEL1XAXsjEnL0QTbrwOB3qOTL0bD3wlJUauTlvwLQOafy5vnZE1xz3F76S032EDRzZMrjQe0S9ZQtQbiDSEEXMn207W3QIDAQAB",
   "name": "Vantage: AI usage insights",
   "short_name": "Vantage",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Local-only visibility into how you use Claude, ChatGPT and Gemini. Redacts sensitive data before anything is stored. Weekly and monthly reports.",
   "minimum_chrome_version": "114",
   "permissions": [

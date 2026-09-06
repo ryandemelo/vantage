@@ -6,6 +6,16 @@ All notable changes to this project are recorded here. The format follows
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [0.3.0] - 2026-09-06
+
+### Added
+
+- The prompt is read from the request the site sends rather than from the rendered page. Rules are declarative and pushable through policy. The page reading path remains as a fallback for sites without a rule, currently Gemini.
+- `captureSource` on every event, recording which path saw the prompt.
+- The selector probe reports the elements that are actually present when a selector misses.
+
 ### Fixed
 
 - Claude assistant turn selector reordered from a live probe on a signed in conversation. The two that led the list no longer resolve and the third does, so it now leads. Turn counting, response measurement and conversation depth depended on it.
