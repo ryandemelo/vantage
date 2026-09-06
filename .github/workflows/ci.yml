@@ -38,6 +38,9 @@ jobs:
       - name: End to end checks
         run: node tools/e2e-fixture.js
 
+      - name: Page context hook checks
+        run: node tools/e2e-nethook.js
+
       - name: Probe is in sync with the adapters
         run: |
           node tools/make-probe.js

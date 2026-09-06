@@ -26,6 +26,7 @@
   "scripts": {
     "test": "node tests/smoke.js",
     "test:e2e": "node tools/e2e-fixture.js",
+    "test:nethook": "node tools/e2e-nethook.js",
     "build": "node tools/build.js",
     "probe:build": "node tools/make-probe.js",
     "probe:live": "node tools/probe-live.js",

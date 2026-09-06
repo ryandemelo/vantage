@@ -1,0 +1,92 @@
+<!doctype html>
+<!--
+  Exercises net-hook.js against the cases that matter. The hook patches fetch
+  and XMLHttpRequest in the page's own context, so a mistake here does not
+  degrade a metric, it breaks the site for the user.
+
+  Every case records two things: whether the page still worked, and whether the
+  hook forwarded the request. Both matter. Forwarding nothing is a missed
+  capture, breaking the page is far worse.
+-->
+<html lang="en">
+<head><meta charset="utf-8"><title>net hook cases</title></head>
+<body>
+<script>
+  window.__results = {};
+  window.__forwarded = [];
+
+  // Watch what the hook posts out, without interfering.
+  window.addEventListener('message', (e) => {
+    if (e.source === window && e.data && e.data.channel === 'vantage:net' && e.data.type === 'request') {
+      window.__forwarded.push({ url: e.data.url, method: e.data.method, body: e.data.body });
+    }
+  });
+
+  const record = (name, value) => { window.__results[name] = value; };
+
+  window.__run = async function () {
+    window.__forwarded = [];
+
+    // 1. A normal prompt POST. Must forward, and the page must get its response.
+    const r1 = await fetch('/backend-api/conversation', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ conversation_id: 'c1', messages: [{ content: { parts: ['hello there'] } }] })
+    });
+    record('fetchStatus', r1.status);
+    record('fetchBody', (await r1.json()).ok === true);
+
+    // 2. GET. Nothing to capture.
+    await fetch('/backend-api/conversation').catch(() => {});
+
+    // 3. Cross origin. Must never cross, even though it is a JSON POST.
+    await fetch('https://other.test.internal/backend-api/conversation', {
+      method: 'POST', body: JSON.stringify({ messages: [{ content: { parts: ['secret'] } }] })
+    }).catch(() => {});
+
+    // 4. Non JSON body.
+    await fetch('/backend-api/conversation', { method: 'POST', body: 'plain text' }).catch(() => {});
+
+    // 5. FormData, which is how a file upload goes out.
+    const fd = new FormData();
+    fd.append('file', new Blob(['file contents that must not cross']), 'a.txt');
+    await fetch('/backend-api/upload', { method: 'POST', body: fd }).catch(() => {});
+
+    // 6. Oversized body.
+    await fetch('/backend-api/conversation', {
+      method: 'POST', body: JSON.stringify({ big: 'x'.repeat(600 * 1024) })
+    }).catch(() => {});
+
+    // 7. A Request object rather than a url string.
+    const req = new Request('/backend-api/conversation', {
+      method: 'POST',
+      body: JSON.stringify({ conversation_id: 'c2', messages: [{ content: { parts: ['via request object'] } }] })
+    });
+    const r7 = await fetch(req);
+    record('requestObjectStatus', r7.status);
+
+    // 8. XMLHttpRequest, still used by parts of these sites.
+    await new Promise((resolve) => {
+      const x = new XMLHttpRequest();
+      x.open('POST', '/backend-api/conversation');
+      x.onload = () => { record('xhrStatus', x.status); resolve(); };
+      x.onerror = () => { record('xhrStatus', 'error'); resolve(); };
+      x.send(JSON.stringify({ conversation_id: 'c3', messages: [{ content: { parts: ['sent by xhr'] } }] }));
+    });
+
+    // 9. A rejected request must still reject, not be swallowed.
+    let rejected = false;
+    await fetch('http://127.0.0.1:1/nope', { method: 'POST', body: '{}' })
+      .then(() => {}, () => { rejected = true; });
+    record('failuresStillReject', rejected);
+
+    // 10. fetch must still look like fetch to feature detection.
+    record('fetchLooksNative', /native code/.test(Function.prototype.toString.call(window.fetch)) ||
+      /native code/.test(window.fetch.toString()));
+    record('fetchName', window.fetch.name);
+
+    return { results: window.__results, forwarded: window.__forwarded };
+  };
+</script>
+</body>
+</html>

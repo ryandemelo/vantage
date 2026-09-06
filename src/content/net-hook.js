@@ -80,6 +80,24 @@
 
   /* ------------------------------- fetch -------------------------------- */
 
+  /* A Request object carries its body as a stream rather than a string, and
+   * when one is passed without an init there is no string to inspect. Clone it
+   * and read the copy, so the original is untouched and the page is unaffected.
+   * The clone is only taken for same origin POSTs, never for anything else. */
+  function considerRequestObject(req) {
+    try {
+      if (!req || typeof req.clone !== 'function') return;
+      if (String(req.method || '').toUpperCase() !== 'POST') return;
+      const u = new URL(req.url, window.location.href);
+      if (u.origin !== window.location.origin) return;
+      req.clone().text().then((body) => {
+        if (eligible(req.url, 'POST', body)) consider(req.url, 'POST', body);
+      }).catch(() => {});
+    } catch (e) {
+      /* observation must never break the page */
+    }
+  }
+
   const realFetch = window.fetch;
   if (typeof realFetch === 'function') {
     window.fetch = function (input, init) {
@@ -87,7 +105,11 @@
         const url = typeof input === 'string' ? input : (input && input.url) || '';
         const method = (init && init.method) || (input && input.method) || 'GET';
         const body = init && init.body;
-        if (eligible(url, method, body)) consider(url, method, body);
+        if (typeof body === 'string') {
+          if (eligible(url, method, body)) consider(url, method, body);
+        } else if (input && typeof input === 'object' && typeof input.clone === 'function') {
+          considerRequestObject(input);
+        }
       } catch (e) {
         /* observation must never break the page */
       }
